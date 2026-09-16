@@ -84,19 +84,24 @@ namespace Dev.Scripts.Editor.BlastOut
         }
 
         /* Level 4 — một viên đạn, hai khối. Bắn thẳng vào khối là chắc chắn thua; phải nhắm thùng
-           nổ và để vụ nổ dây chuyền làm phần còn lại. */
+           nổ và để vụ nổ dây chuyền làm phần còn lại.
+
+           Khoảng cách khối↔thùng (2.1) cố ý nằm GIỮA hai bán kính trong blast_tuning:
+             lớn hơn BlastRadius (1.9)  ⇒ nổ trúng khối KHÔNG với tới thùng, cú bắn ẩu là thua;
+             nhỏ hơn BarrelRadius (3.2) ⇒ thùng nổ thì quét được cả hai khối, cú bắn đúng thì thắng.
+           Đặt hai khối sát thùng hơn là level tự giải: đập vào đâu cũng kích nổ dây chuyền. */
         static BlastLevelConfig Level04()
         {
-            var level = Begin(4, "ONE SHOT - USE THE BARREL", new Vector2(-3.4f, -5f));
+            var level = Begin(4, "ONE SHOT - HIT THE BARREL", new Vector2(-3.4f, -5f));
             var w = new SerializedFieldWriter(level);
 
             Ammo(w, AmmoType.Bomb);
             var platforms = w.ArrayOf("platforms", 1);
-            Platform(platforms, 0, new Vector2(1.4f, -0.8f), 4.4f);
+            Platform(platforms, 0, new Vector2(1.6f, -0.8f), 5.2f);
 
             var blocks = w.ArrayOf("blocks", 2);
-            Block(blocks, 0, 0.6f, -0.8f);
-            Block(blocks, 1, 2.6f, -0.8f);
+            Block(blocks, 0, -0.5f, -0.8f);
+            Block(blocks, 1, 3.7f, -0.8f);
 
             var barrels = w.ArrayOf("barrels", 1);
             Barrel(barrels, 0, 1.6f, -0.8f);

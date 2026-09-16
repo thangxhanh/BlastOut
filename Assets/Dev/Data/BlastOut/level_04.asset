@@ -20,21 +20,21 @@ MonoBehaviour:
   lateTick: 0
   fixedTick: 0
   displayNumber: 4
-  hint: ONE SHOT - USE THE BARREL
+  hint: ONE SHOT - HIT THE BARREL
   launcherPosition: {x: -3.4, y: -5}
   launcherPlatformIndex: -1
   collectZoneTopY: -6.4
   ammo: 00000000
   platforms:
-  - Center: {x: 1.4, y: -0.8}
-    Width: 4.4
+  - Center: {x: 1.6, y: -0.8}
+    Width: 5.2
     Motion:
       kind: 0
       distance: 0
       speed: 0
       phase: 0
   blocks:
-  - Position: {x: 0.6, y: -0.22000003}
-  - Position: {x: 2.6, y: -0.22000003}
+  - Position: {x: -0.5, y: -0.22000003}
+  - Position: {x: 3.7, y: -0.22000003}
   barrels:
   - Position: {x: 1.6, y: -0.19000003}

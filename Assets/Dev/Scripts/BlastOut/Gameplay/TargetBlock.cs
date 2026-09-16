@@ -25,8 +25,12 @@ namespace Dev.Scripts.BlastOut.Gameplay
                Người chơi cần cảm nhận được rằng "nổ gần hơn = đẩy mạnh hơn" để chọn điểm nổ. */
             var falloff = 1f - distance / radius;
 
-            /* Khoảng cách 0 xảy ra khi đạn nổ đúng tâm khối — không có hướng để đẩy, chọn hướng lên. */
-            var direction = distance > 0.001f ? toBlock / distance : Vector2.up;
+            /* Nổ gần như trùng tâm khối thì hướng đẩy vô nghĩa: lệch vài phần trăm unit là ra hướng
+               xuống, khối bị ép vào bệ và đứng im — người chơi bắn trúng mà tưởng game hỏng.
+               Ngưỡng lấy nhỏ hơn nửa cạnh khối, nên chỉ những cú nổ THỰC SỰ nằm trong khối mới rơi
+               vào đây, và khi đó hất thẳng lên là hợp trực giác nhất. */
+            const float minDirectionDistance = 0.25f;
+            var direction = distance > minDirectionDistance ? toBlock / distance : Vector2.up;
             direction = (direction + Vector2.up * tuning.BlastUpwardBias).normalized;
 
             body.AddForce(direction * (force * falloff), ForceMode2D.Impulse);

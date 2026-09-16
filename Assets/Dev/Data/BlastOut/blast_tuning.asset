@@ -29,8 +29,8 @@ MonoBehaviour:
   blastForce: 11
   blastUpwardBias: 0.45
   blastTorque: 5
-  barrelRadius: 2.4
-  barrelForce: 11
+  barrelRadius: 3.2
+  barrelForce: 14
   barrelChainDelay: 0.12
   settleSpeedThreshold: 0.3
   settleHoldTime: 0.3

@@ -126,10 +126,12 @@ namespace Dev.Scripts.Editor.BlastOut
                 .Float("blastUpwardBias", 0.45f)
                 .Float("blastTorque", 5f)
 
-                /* Thùng nổ chỉ cần NẰM TRONG bán kính là phát nổ, không phụ thuộc lực còn lại bao
-                   nhiêu. Bán kính rộng vì thế biến mọi cú bắn trượt thành cú bắn trúng. */
-                .Float("barrelRadius", 2.4f)
-                .Float("barrelForce", 11f)
+                /* Thùng nổ PHẢI mạnh và rộng hơn hẳn đạn thường — đó là phần thưởng cho việc chọn
+                   đúng mục tiêu. Cái cần siết là bán kính của ĐẠN (ở trên): thùng chỉ cần nằm trong
+                   bán kính đó là phát nổ, không phụ thuộc lực còn lại, nên đạn quét rộng bao nhiêu
+                   thì thùng dễ bị kích nổ nhờ ăn may bấy nhiêu. */
+                .Float("barrelRadius", 3.2f)
+                .Float("barrelForce", 14f)
                 .Float("barrelChainDelay", 0.12f)
 
                 .Float("settleSpeedThreshold", 0.3f)
