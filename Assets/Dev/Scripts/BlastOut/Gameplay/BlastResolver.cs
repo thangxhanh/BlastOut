@@ -18,8 +18,7 @@ namespace Dev.Scripts.BlastOut.Gameplay
             /* Cố ý KHÔNG lọc theo layer: lọc bằng TryGetComponent<IBlastable> vừa đủ nhanh ở quy mô
                này (vài chục collider/level) và bỏ được cả một nhóm bug "không có gì xảy ra vì
                quên set layer". useTriggers = false để vùng thu không bị tính là vật thể chịu lực. */
-            filter = new ContactFilter2D { useTriggers = false };
-            filter.NoFilter();
+            filter = ContactFilter2D.noFilter;
             filter.useTriggers = false;
         }
 

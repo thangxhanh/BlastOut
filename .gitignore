@@ -37,3 +37,6 @@ Assets/Firebase/Plugins/x86_64/FirebaseCppApp-11_8_1.bundle
 Assets/Firebase/Plugins/x86_64/FirebaseCppApp-11_8_1.bundle.meta
 Assets/Firebase/Plugins/x86_64/FirebaseCppApp-11_8_1.so
 Assets/Firebase/Plugins/x86_64/FirebaseCppApp-11_8_1.so.meta
+
+# Thu muc tam cua IL2CPP luc build Android
+.utmp/
