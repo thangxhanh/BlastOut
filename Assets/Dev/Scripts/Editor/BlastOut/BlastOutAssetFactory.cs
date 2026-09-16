@@ -4,7 +4,7 @@ using Dev.Scripts.BlastOut.Gameplay;
 using UnityEditor;
 using UnityEngine;
 
-namespace Dev.Scripts.BlastOut.Authoring
+namespace Dev.Scripts.Editor.BlastOut
 {
     /* Sinh sprite, config và prefab cho BlastOut.
 
@@ -136,46 +136,6 @@ namespace Dev.Scripts.BlastOut.Authoring
             return tuning;
         }
 
-        /* Level 1 theo đúng mục tiêu thiết kế: dạy kéo–thả, KHÔNG THỂ THUA khi còn đạn.
-           Một khối, một bệ hẹp, không thùng nổ, không vật cản — chỉ có "kéo, thả, chạm". */
-        public static BlastLevelConfig CreateLevelOne()
-        {
-            EnsureFolder(DataFolder);
-            var level = CreateOrLoad<BlastLevelConfig>($"{DataFolder}/level_01.asset");
-
-            var writer = new SerializedFieldWriter(level);
-            writer.Int("displayNumber", 1)
-                .Text("hint", "DRAG TO AIM")
-                .Vec2("launcherPosition", new Vector2(-3.4f, -5f))
-                .Float("collectZoneTopY", -6.4f);
-
-            var ammo = writer.ArrayOf("ammo", 2);
-            if (ammo != null)
-            {
-                for (var i = 0; i < 2; i++) ammo.GetArrayElementAtIndex(i).enumValueIndex = 0;
-            }
-
-            var platforms = writer.ArrayOf("platforms", 1);
-            if (platforms != null)
-            {
-                var platform = platforms.GetArrayElementAtIndex(0);
-                platform.FindPropertyRelative("Center").vector2Value = new Vector2(1.4f, -1f);
-                platform.FindPropertyRelative("Width").floatValue = 3.2f;
-            }
-
-            var blocks = writer.ArrayOf("blocks", 1);
-            if (blocks != null)
-            {
-                blocks.GetArrayElementAtIndex(0)
-                    .FindPropertyRelative("Position").vector2Value = new Vector2(1.4f, -0.42f);
-            }
-
-            writer.ArrayOf("barrels", 0);
-            writer.Apply();
-
-            EditorUtility.SetDirty(level);
-            return level;
-        }
 
         /* Gom các level đã tạo vào một BlastLevelSet — đây là "chỗ lưu level" mà controller đọc.
            Thêm level về sau chỉ cần dựng thêm config rồi kéo vào mảng này trong Inspector. */

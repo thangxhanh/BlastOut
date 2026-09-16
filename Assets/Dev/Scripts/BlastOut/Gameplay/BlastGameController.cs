@@ -40,6 +40,9 @@ namespace Dev.Scripts.BlastOut.Gameplay
         BlastResolver resolver;
         ProjectilePool projectiles;
         BlastLevelConfig level;
+        Transform launcherAnchor;
+        Vector2 launcherOffset;
+        float levelTime;
         int levelIndex;
         int ammoIndex;
         float settleElapsed;
@@ -98,6 +101,15 @@ namespace Dev.Scripts.BlastOut.Gameplay
             launcherRoot.position = level.LauncherPosition;
 
             builder.Build(level, resolver);
+
+            /* Pháo có thể đứng trên một bệ đang chạy. Giữ khoảng lệch lúc dựng rồi bám theo mỗi
+               frame, nhờ vậy pháo không bao giờ rời khỏi mặt bệ dù quỹ đạo là đường hay vòng. */
+            levelTime = 0f;
+            launcherAnchor = builder.GetPlatformAnchor(level.LauncherPlatformIndex);
+            launcherOffset = launcherAnchor
+                ? level.LauncherPosition - (Vector2)launcherAnchor.position
+                : Vector2.zero;
+
             hud.ShowLevel(level.DisplayNumber, level.Hint);
 
             session.Begin(level.AmmoCount, level.TargetCount);
@@ -123,6 +135,10 @@ namespace Dev.Scripts.BlastOut.Gameplay
         {
             var deltaTime = Time.deltaTime;
 
+            /* Pháo bám bệ ở đây chứ không ở FixedTick: bệ bật interpolation nên vị trí hiển thị chỉ
+               đúng ở nhịp render, đặt theo nhịp vật lý thì khẩu pháo giật so với bệ dưới chân. */
+            if (launcherAnchor) launcherRoot.position = (Vector2)launcherAnchor.position + launcherOffset;
+
             switch (session.Phase)
             {
                 case BlastPhase.Flying:
@@ -139,6 +155,23 @@ namespace Dev.Scripts.BlastOut.Gameplay
             }
 
             aim.HandleInput(session.CanAim);
+        }
+
+        /* Bệ chạy được đẩy theo NHỊP VẬT LÝ. Đẩy theo nhịp render thì vận tốc đặt lệch pha với lúc
+           va chạm được giải, ma sát không giữ nổi và khối tụt dần khỏi bệ dù ma sát đã tối đa.
+
+           Chạy ở mọi phase, kể cả lúc đạn đang bay: dừng bệ giữa chừng thì cú bắn vừa canh thời
+           điểm trở nên vô nghĩa. */
+        public override void FixedTick()
+        {
+            levelTime += Time.fixedDeltaTime;
+
+            var moving = builder.MovingPlatforms;
+            for (var i = 0; i < moving.Count; i++)
+            {
+                var platform = moving[i];
+                if (platform) platform.ManualTick(levelTime);
+            }
         }
 
         /* Đạn đang bay: một cú chạm bất kỳ = kích nổ TẤT CẢ đạn đang bay.

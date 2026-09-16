@@ -13,9 +13,11 @@ namespace Dev.Scripts.BlastOut.Config
         [Serializable]
         public struct PlatformPlacement
         {
-            [Tooltip("Tâm của bệ, toạ độ thế giới.")]
+            [Tooltip("Tâm của bệ, toạ độ thế giới. Với bệ chuyển động, đây là tâm của quỹ đạo.")]
             public Vector2 Center;
             public float Width;
+            [Tooltip("Để Static nếu bệ đứng yên.")]
+            public PlatformMotion Motion;
         }
 
         [Serializable]
@@ -37,6 +39,10 @@ namespace Dev.Scripts.BlastOut.Config
 
         [Header("Bố cục")]
         [SerializeField] Vector2 launcherPosition = new Vector2(-4.2f, -6.4f);
+
+        [Tooltip("Chỉ số bệ mà khẩu pháo đứng lên (-1 = đứng yên trên nền). Pháo bám theo bệ đó, " +
+                 "nên nếu bệ chạy thì cả điểm bắn cũng chạy.")]
+        [SerializeField] int launcherPlatformIndex = -1;
         [Tooltip("Mọi khối rơi xuống dưới mức y này được tính là đã thu.")]
         [SerializeField] float collectZoneTopY = -8f;
 
@@ -50,6 +56,7 @@ namespace Dev.Scripts.BlastOut.Config
         public int DisplayNumber => displayNumber;
         public string Hint => hint;
         public Vector2 LauncherPosition => launcherPosition;
+        public int LauncherPlatformIndex => launcherPlatformIndex;
         public float CollectZoneTopY => collectZoneTopY;
         public AmmoType[] Ammo => ammo;
         public PlatformPlacement[] Platforms => platforms;

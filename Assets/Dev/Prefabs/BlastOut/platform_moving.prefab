@@ -1,6 +1,6 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!1 &3200574120776658547
+--- !u!1 &6906916527811076383
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -8,25 +8,25 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 4453128425329630910}
-  - component: {fileID: 8335377641845329213}
-  - component: {fileID: 3061835102214007634}
-  - component: {fileID: 455116774590060249}
-  - component: {fileID: 6083331436938422098}
+  - component: {fileID: 7663942738190652793}
+  - component: {fileID: 2684688776391384921}
+  - component: {fileID: 7348765646403435696}
+  - component: {fileID: 3017986514451311436}
+  - component: {fileID: 4019723429775510172}
   m_Layer: 0
-  m_Name: explosive_barrel
+  m_Name: platform_moving
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &4453128425329630910
+--- !u!4 &7663942738190652793
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3200574120776658547}
+  m_GameObject: {fileID: 6906916527811076383}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
@@ -35,14 +35,14 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!212 &8335377641845329213
+--- !u!212 &2684688776391384921
 SpriteRenderer:
   serializedVersion: 2
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3200574120776658547}
+  m_GameObject: {fileID: 6906916527811076383}
   m_Enabled: 1
   m_CastShadows: 0
   m_ReceiveShadows: 0
@@ -82,25 +82,25 @@ SpriteRenderer:
   m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 2
+  m_SortingOrder: 0
   m_MaskInteraction: 0
-  m_Sprite: {fileID: 21300000, guid: b680a6b75c5aed44b84f5d541d43f17d, type: 3}
+  m_Sprite: {fileID: 21300000, guid: a35a9c7a1e191fe4f9704aed3ed08f1a, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
-  m_Size: {x: 0.6451613, y: 0.9032258}
+  m_Size: {x: 3.142857, y: 1}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
---- !u!61 &3061835102214007634
+--- !u!61 &7348765646403435696
 BoxCollider2D:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3200574120776658547}
+  m_GameObject: {fileID: 6906916527811076383}
   m_Enabled: 1
   serializedVersion: 3
   m_Density: 1
@@ -132,29 +132,29 @@ BoxCollider2D:
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
-    oldSize: {x: 0.6451613, y: 0.9032258}
-    newSize: {x: 0.6451613, y: 0.9032258}
+    oldSize: {x: 3.142857, y: 1}
+    newSize: {x: 3.142857, y: 1}
     adaptiveTilingThreshold: 0.5
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
-  m_Size: {x: 0.6451613, y: 0.9032258}
+  m_Size: {x: 3.142857, y: 1}
   m_EdgeRadius: 0
---- !u!50 &455116774590060249
+--- !u!50 &3017986514451311436
 Rigidbody2D:
   serializedVersion: 5
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3200574120776658547}
-  m_BodyType: 0
+  m_GameObject: {fileID: 6906916527811076383}
+  m_BodyType: 1
   m_Simulated: 1
   m_UseFullKinematicContacts: 0
   m_UseAutoMass: 0
-  m_Mass: 0.8
-  m_LinearDamping: 0.05
-  m_AngularDamping: 0.6
+  m_Mass: 1
+  m_LinearDamping: 0
+  m_AngularDamping: 0.05
   m_GravityScale: 1
   m_Material: {fileID: 0}
   m_IncludeLayers:
@@ -167,18 +167,18 @@ Rigidbody2D:
   m_SleepingMode: 1
   m_CollisionDetection: 0
   m_Constraints: 0
---- !u!114 &6083331436938422098
+--- !u!114 &4019723429775510172
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3200574120776658547}
+  m_GameObject: {fileID: 6906916527811076383}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2a95234c112309547b3b6586d5a34dd7, type: 3}
+  m_Script: {fileID: 11500000, guid: bc3b49fd03d683a4395406408222d9fa, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Dev.Runtime::Dev.Scripts.BlastOut.Gameplay.ExplosiveBarrel
+  m_EditorClassIdentifier: Dev.Runtime::Dev.Scripts.BlastOut.Gameplay.MovingPlatform
   id: 
   pools: {fileID: 11400000, guid: 866f23a3800914ad285dc839fa4da6d2, type: 2}
   ticker: {fileID: 11400000, guid: b1259f9e47f5d476cbfd3237af191b98, type: 2}
@@ -186,7 +186,4 @@ MonoBehaviour:
   tick: 0
   lateTick: 0
   fixedTick: 0
-  body: {fileID: 455116774590060249}
-  tuning: {fileID: 11400000, guid: f8ee599dc8503fe4689b23bf40965c0d, type: 2}
-  view: {fileID: 8335377641845329213}
-  armedColor: {r: 1, g: 0.95, b: 0.65, a: 1}
+  body: {fileID: 3017986514451311436}

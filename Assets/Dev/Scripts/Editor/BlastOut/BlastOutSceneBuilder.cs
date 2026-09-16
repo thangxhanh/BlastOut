@@ -7,9 +7,9 @@ using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
 
-namespace Dev.Scripts.BlastOut.Authoring
+namespace Dev.Scripts.Editor.BlastOut
 {
-    /* Dựng toàn bộ scene chơi thử Level 1 bằng một lệnh menu.
+    /* Dựng toàn bộ scene gameplay bằng một lệnh menu.
 
        Tồn tại vì hai lý do, không phải để khoe tool:
        1. Scene/prefab là asset nhị phân — dựng bằng code thì diff trên git đọc được là "đã đổi gì",
@@ -27,16 +27,19 @@ namespace Dev.Scripts.BlastOut.Authoring
         {
             /* Mở scene trắng TRƯỚC khi tạo prefab: SaveAsPrefabAsset dựng object tạm trong scene
                đang mở rồi xoá đi, nên nếu làm ngược lại thì scene của người dùng bị đánh dấu dirty
-               và NewScene bật hộp thoại "Save changes?" giữa chừng. */
-            if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
+               và NewScene bật hộp thoại "Save changes?" giữa chừng.
+
+               Lưu thẳng thay vì hỏi: hộp thoại xác nhận chặn cả Editor khi lệnh này được gọi từ
+               script hoặc tool bên ngoài, và công việc đang mở vẫn được giữ chứ không mất. */
+            EditorSceneManager.SaveOpenScenes();
             var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
 
             var square = BlastOutAssetFactory.CreateSquareSprite("square", 16);
             var circle = BlastOutAssetFactory.CreateCircleSprite("circle", 64);
 
             var tuning = BlastOutAssetFactory.CreateTuning();
-            var level = BlastOutAssetFactory.CreateLevelOne();
-            var levelSet = BlastOutAssetFactory.CreateLevelSet(level);
+            var levels = BlastOutLevelFactory.CreateAll();
+            var levelSet = BlastOutAssetFactory.CreateLevelSet(levels);
             var trailMaterial = BlastOutPrefabFactory.CreateTrailMaterial();
 
             /* Vật thể trong thế giới dùng art Kenney (CC0); riêng đạn và chấm quỹ đạo vẫn là hình
@@ -46,6 +49,7 @@ namespace Dev.Scripts.BlastOut.Authoring
             var platformArt = BlastOutAssetFactory.LoadKenney("Gameplay/platform_metal.png");
 
             var platformPrefab = BlastOutPrefabFactory.CreatePlatform(platformArt);
+            var movingPlatformPrefab = BlastOutPrefabFactory.CreateMovingPlatform(platformArt);
             var blockPrefab = BlastOutPrefabFactory.CreateBlock(blockArt, tuning);
             var barrelPrefab = BlastOutPrefabFactory.CreateBarrel(barrelArt, tuning);
             var projectilePrefab = BlastOutPrefabFactory.CreateProjectile(circle, tuning, trailMaterial);
@@ -54,7 +58,7 @@ namespace Dev.Scripts.BlastOut.Authoring
             AssetDatabase.SaveAssets();
 
             var camera = BuildCamera();
-            var launcher = BuildLauncher(square, out var barrelPivot, out var muzzle);
+            var launcher = BuildLauncher(out var barrelPivot, out var muzzle);
             var preview = BuildPreview(dotPrefab, tuning);
             var collectZone = BuildCollectZone(square);
             var containers = new GameObject("World").transform;
@@ -64,7 +68,8 @@ namespace Dev.Scripts.BlastOut.Authoring
             var hud = BuildHud();
             BuildEventSystem();
             var aim = BuildAim(launcher, muzzle, barrelPivot, preview, tuning);
-            var builder = BuildLevelBuilder(levelRoot, platformPrefab, blockPrefab, barrelPrefab, platformArt);
+            var builder = BuildLevelBuilder(levelRoot, platformPrefab, movingPlatformPrefab, blockPrefab,
+                barrelPrefab, platformArt);
             var controller = BuildController(levelSet, tuning, camera, aim, builder, collectZone, preview,
                 launcher.transform, projectileRoot, projectilePrefab, hud);
 
@@ -106,23 +111,31 @@ namespace Dev.Scripts.BlastOut.Authoring
             return camera;
         }
 
-        static GameObject BuildLauncher(Sprite square, out Transform barrelPivot, out Transform muzzle)
+        static GameObject BuildLauncher(out Transform barrelPivot, out Transform muzzle)
         {
+            var baseArt = BlastOutAssetFactory.LoadKenney("Gameplay/launcher_base.png");
+            var barrelArt = BlastOutAssetFactory.LoadKenney("Gameplay/launcher_barrel.png");
+
             var root = new GameObject("Launcher");
 
-            var basePart = NewSprite(root.transform, "Base", square, SteelColor, 1);
+            var basePart = NewSprite(root.transform, "Base", baseArt, Color.white, 1);
             basePart.localPosition = Vector3.zero;
-            basePart.localScale = new Vector3(1f, 0.55f, 1f);
 
             barrelPivot = NewChild(root.transform, "BarrelPivot");
 
-            var barrel = NewSprite(barrelPivot, "Barrel", square, SteelColor, 0);
-            /* Nòng lệch sang phải so với pivot: xoay pivot là nòng quét quanh gốc pháo, đúng cảm giác. */
-            barrel.localPosition = new Vector3(0.5f, 0f, 0f);
-            barrel.localScale = new Vector3(1.1f, 0.34f, 1f);
+            var barrel = NewSprite(barrelPivot, "Barrel", barrelArt, Color.white, 0);
+            /* Sprite nòng vẽ hướng LÊN; xoay -90° cho chĩa sang phải, khớp với AimController
+               (góc 0 = bắn sang phải). */
+            barrel.localRotation = Quaternion.Euler(0f, 0f, -90f);
+
+            /* Nòng lệch sang phải so với pivot: xoay pivot là nòng quét quanh gốc pháo, đúng cảm
+               giác. Lấy chiều dài từ chính sprite nên đổi art không phải chỉnh lại số. */
+            var barrelLength = BlastOutPrefabFactory.SpriteSize(barrelArt).y;
+            barrel.localPosition = new Vector3(barrelLength * 0.5f, 0f, 0f);
 
             muzzle = NewChild(barrelPivot, "Muzzle");
-            muzzle.localPosition = new Vector3(1.05f, 0f, 0f);
+            /* Đầu nòng, đẩy ra thêm chút để viên đạn không sinh ra bên trong chính khẩu pháo. */
+            muzzle.localPosition = new Vector3(barrelLength + 0.15f, 0f, 0f);
 
             return root;
         }
@@ -177,7 +190,8 @@ namespace Dev.Scripts.BlastOut.Authoring
         }
 
         static LevelBuilder BuildLevelBuilder(Transform container, Transform platformPrefab,
-            TargetBlock blockPrefab, ExplosiveBarrel barrelPrefab, Sprite platformArt)
+            MovingPlatform movingPlatformPrefab, TargetBlock blockPrefab, ExplosiveBarrel barrelPrefab,
+            Sprite platformArt)
         {
             var go = new GameObject("LevelBuilder");
             var builder = go.AddComponent<LevelBuilder>();
@@ -191,6 +205,7 @@ namespace Dev.Scripts.BlastOut.Authoring
             new SerializedFieldWriter(builder)
                 .Ref("container", container)
                 .Ref("platformPrefab", platformPrefab)
+                .Ref("movingPlatformPrefab", movingPlatformPrefab)
                 .Ref("blockPrefab", blockPrefab)
                 .Ref("barrelPrefab", barrelPrefab)
                 .Vec2("platformSpriteSize", spriteSize)
@@ -223,8 +238,9 @@ namespace Dev.Scripts.BlastOut.Authoring
                 .Ref("hud", hud)
                 .Apply();
 
-            /* Controller là BaseMono DUY NHẤT đăng ký Tick — mọi thứ khác được nó gọi xuống. */
-            BlastOutPrefabFactory.BindBase(controller, tick: true);
+            /* Controller là BaseMono DUY NHẤT đăng ký nhịp — mọi thứ khác được nó gọi xuống.
+               FixedTick dành riêng cho bệ chạy, thứ duy nhất phải đi theo nhịp vật lý. */
+            BlastOutPrefabFactory.BindBase(controller, tick: true, fixedTick: true);
 
             return controller;
         }

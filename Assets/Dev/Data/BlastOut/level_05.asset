@@ -10,7 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 2c6d8425d7aa25244882298326ff4777, type: 3}
-  m_Name: level_01
+  m_Name: level_05
   m_EditorClassIdentifier: Dev.Runtime::Dev.Scripts.BlastOut.Config.BlastLevelConfig
   id: 
   pools: {fileID: 11400000, guid: 866f23a3800914ad285dc839fa4da6d2, type: 2}
@@ -19,20 +19,28 @@ MonoBehaviour:
   tick: 0
   lateTick: 0
   fixedTick: 0
-  displayNumber: 1
-  hint: DRAG ANYWHERE TO AIM
-  launcherPosition: {x: -3.4, y: -5}
-  launcherPlatformIndex: -1
+  displayNumber: 5
+  hint: THE CANNON IS MOVING
+  launcherPosition: {x: -2.4, y: -4.3}
+  launcherPlatformIndex: 0
   collectZoneTopY: -6.4
   ammo: 0000000000000000
   platforms:
-  - Center: {x: 1.4, y: -1}
-    Width: 3.2
+  - Center: {x: -2.4, y: -4.8}
+    Width: 2.6
+    Motion:
+      kind: 1
+      distance: 1.5
+      speed: 0.13
+      phase: 0
+  - Center: {x: 1.6, y: 0.4}
+    Width: 3.4
     Motion:
       kind: 0
       distance: 0
       speed: 0
       phase: 0
   blocks:
-  - Position: {x: 1.4, y: -0.42000002}
+  - Position: {x: 0.8, y: 0.98}
+  - Position: {x: 2.4, y: 0.98}
   barrels: []

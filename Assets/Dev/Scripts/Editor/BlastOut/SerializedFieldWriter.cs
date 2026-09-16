@@ -2,7 +2,7 @@ using System;
 using UnityEditor;
 using UnityEngine;
 
-namespace Dev.Scripts.BlastOut.Authoring
+namespace Dev.Scripts.Editor.BlastOut
 {
     /* Mọi field trong BlastOut đều là [SerializeField] private (CLAUDE.md §9.5), nên tool dựng
        scene không gán thẳng được — phải đi qua SerializedObject. Class này gói lại để chỗ gọi

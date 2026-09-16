@@ -14,6 +14,9 @@ namespace Dev.Scripts.BlastOut.Gameplay
     {
         [SerializeField] Transform container;
         [SerializeField] Transform platformPrefab;
+        [Tooltip("Bệ chạy theo quỹ đạo: cùng hình dáng nhưng có Rigidbody2D Kinematic để kéo được " +
+                 "vật đặt trên.")]
+        [SerializeField] MovingPlatform movingPlatformPrefab;
         [Tooltip("Kích thước sprite bệ theo world unit, lấy lúc dựng prefab. Dùng để quy đổi chiều " +
                  "dài khai báo trong level data sang scale.")]
         [SerializeField] Vector2 platformSpriteSize = Vector2.one;
@@ -25,9 +28,21 @@ namespace Dev.Scripts.BlastOut.Gameplay
         readonly List<TargetBlock> blocks = new List<TargetBlock>(16);
         readonly List<ExplosiveBarrel> barrels = new List<ExplosiveBarrel>(8);
         readonly List<GameObject> platforms = new List<GameObject>(8);
+        readonly List<MovingPlatform> movingPlatforms = new List<MovingPlatform>(4);
+
+        /* Transform của từng bệ theo đúng thứ tự khai báo trong level data — controller cần để cho
+           khẩu pháo bám theo bệ nó đứng lên. */
+        readonly List<Transform> platformAnchors = new List<Transform>(8);
 
         public IReadOnlyList<TargetBlock> Blocks => blocks;
         public IReadOnlyList<ExplosiveBarrel> Barrels => barrels;
+        public IReadOnlyList<MovingPlatform> MovingPlatforms => movingPlatforms;
+
+        public Transform GetPlatformAnchor(int index)
+        {
+            if (index < 0 || index >= platformAnchors.Count) return null;
+            return platformAnchors[index];
+        }
 
         public void Build(BlastLevelConfig config, BlastResolver resolver)
         {
@@ -52,7 +67,11 @@ namespace Dev.Scripts.BlastOut.Gameplay
             for (var i = 0; i < list.Length; i++)
             {
                 var placement = list[i];
-                var platform = Instantiate(platformPrefab, container);
+                var moving = placement.Motion.IsMoving && movingPlatformPrefab;
+
+                var platform = moving
+                    ? Instantiate(movingPlatformPrefab, container).transform
+                    : Instantiate(platformPrefab, container);
 
                 /* Giãn bằng localScale chứ không bằng SpriteRenderer.size: sprite 1×1 không có
                    border nên draw mode Sliced sẽ cảnh báo, còn scale thì kéo luôn cả BoxCollider2D
@@ -66,7 +85,15 @@ namespace Dev.Scripts.BlastOut.Gameplay
                     platformThickness / Mathf.Max(0.0001f, platformSpriteSize.y),
                     1f);
 
+                if (moving)
+                {
+                    var runner = platform.GetComponent<MovingPlatform>();
+                    runner.Bind(placement.Center, placement.Motion);
+                    movingPlatforms.Add(runner);
+                }
+
                 platforms.Add(platform.gameObject);
+                platformAnchors.Add(platform);
             }
         }
 
@@ -104,6 +131,8 @@ namespace Dev.Scripts.BlastOut.Gameplay
             blocks.Clear();
             barrels.Clear();
             platforms.Clear();
+            movingPlatforms.Clear();
+            platformAnchors.Clear();
         }
 
         static void DestroySpawned(GameObject target)
