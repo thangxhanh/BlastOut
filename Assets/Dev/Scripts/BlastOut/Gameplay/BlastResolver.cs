@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -22,8 +23,13 @@ namespace Dev.Scripts.BlastOut.Gameplay
             filter.useTriggers = false;
         }
 
+        /* Mọi vụ nổ trong game đều đi qua Blast(), kể cả nổ dây chuyền từ thùng — nên chỉ cần nghe
+           ở đây là VFX tự khớp với mọi nguồn nổ, không phải rải lời gọi vào đạn lẫn thùng. */
+        public event Action<Vector2, float> Blasted;
+
         public void Blast(Vector2 origin, float force, float radius)
         {
+            Blasted?.Invoke(origin, radius);
             hits.Clear();
             Physics2D.OverlapCircle(origin, radius, filter, hits);
 

@@ -181,6 +181,13 @@ namespace Dev.Scripts.Editor.BlastOut
                khỏi build). Ở đây thì ngược lại: material trở thành asset thật và prefab tham
                chiếu tới nó, nên shader chắc chắn vào được build. */
             var material = new Material(Shader.Find("Sprites/Default"));
+
+            /* Đắp texture đốm mềm lên vệt đạn: Sprites/Default không có texture thì vệt là một dải
+               đặc, viền cứng — nhìn như thanh nhựa kéo theo đạn chứ không phải luồng lửa. */
+            var trailTexture = AssetDatabase.LoadAssetAtPath<Texture2D>(
+                $"{BlastOutAssetFactory.KenneyFolder}/VFX/vfx_trail.png");
+            if (trailTexture) material.mainTexture = trailTexture;
+
             AssetDatabase.CreateAsset(material, path);
             return material;
         }

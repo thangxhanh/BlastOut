@@ -33,6 +33,7 @@ namespace Dev.Scripts.BlastOut.Gameplay
         [SerializeField] Transform projectileContainer;
         [SerializeField] BlastProjectile projectilePrefab;
         [SerializeField] BlastHudView hud;
+        [SerializeField] BlastVfxPlayer vfx;
 
         readonly BlastSession session = new BlastSession();
         readonly List<BlastProjectile> flying = new List<BlastProjectile>(8);
@@ -58,6 +59,10 @@ namespace Dev.Scripts.BlastOut.Gameplay
             resolver = new BlastResolver();
             projectiles = new ProjectilePool(projectilePrefab, projectileContainer);
 
+            /* Nghe ở resolver thay vì gọi VFX từ đạn và từ thùng: mọi vụ nổ đều đi qua đó, kể cả
+               nổ dây chuyền, nên hiệu ứng khớp mọi nguồn mà không rải lời gọi khắp nơi. */
+            if (vfx) resolver.Blasted += vfx.PlayExplosion;
+
             preview.Initialize();
             aim.Bind(view);
 
@@ -74,6 +79,7 @@ namespace Dev.Scripts.BlastOut.Gameplay
 
         public override void CleanUp()
         {
+            if (vfx) resolver.Blasted -= vfx.PlayExplosion;
             aim.Fired -= OnFired;
             collectZone.BlockCollected -= OnBlockCollected;
             session.PhaseChanged -= OnPhaseChanged;

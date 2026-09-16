@@ -54,6 +54,7 @@ namespace Dev.Scripts.Editor.BlastOut
             var barrelPrefab = BlastOutPrefabFactory.CreateBarrel(barrelArt, tuning);
             var projectilePrefab = BlastOutPrefabFactory.CreateProjectile(circle, tuning, trailMaterial);
             var dotPrefab = BlastOutPrefabFactory.CreateDot(circle);
+            var vfxPrefab = BlastOutVfxFactory.CreateExplosion();
 
             AssetDatabase.SaveAssets();
 
@@ -65,15 +66,18 @@ namespace Dev.Scripts.Editor.BlastOut
             var levelRoot = NewChild(containers, "Level");
             var projectileRoot = NewChild(containers, "Projectiles");
 
+            var vfx = BuildVfx(vfxPrefab, containers);
             var hud = BuildHud();
             BuildEventSystem();
             var aim = BuildAim(launcher, muzzle, barrelPivot, preview, tuning);
             var builder = BuildLevelBuilder(levelRoot, platformPrefab, movingPlatformPrefab, blockPrefab,
                 barrelPrefab, platformArt);
             var controller = BuildController(levelSet, tuning, camera, aim, builder, collectZone, preview,
-                launcher.transform, projectileRoot, projectilePrefab, hud);
+                launcher.transform, projectileRoot, projectilePrefab, hud, vfx);
 
-            BuildSceneLauncher(preview, aim, builder, collectZone, hud, controller);
+            /* vfx trước controller: controller đăng ký nghe vụ nổ lúc Initialize, lúc đó pool hiệu
+               ứng phải dựng xong rồi. */
+            BuildSceneLauncher(preview, aim, builder, collectZone, hud, vfx, controller);
 
             BlastOutAssetFactory.EnsureFolder("Assets/Dev/Scenes");
             EditorSceneManager.SaveScene(scene, ScenePath);
@@ -138,6 +142,25 @@ namespace Dev.Scripts.Editor.BlastOut
             muzzle.localPosition = new Vector3(barrelLength + 0.15f, 0f, 0f);
 
             return root;
+        }
+
+        static BlastVfxPlayer BuildVfx(ParticleSystem prefab, Transform parent)
+        {
+            var go = new GameObject("BlastVfx");
+            var player = go.AddComponent<BlastVfxPlayer>();
+            var container = NewChild(parent, "Vfx");
+
+            new SerializedFieldWriter(player)
+                .Ref("explosionPrefab", prefab)
+                .Ref("container", container)
+                .Int("poolSize", 6)
+                /* Khớp blastRadius trong tuning: prefab dựng theo bán kính này rồi phóng theo tỉ lệ,
+                   nên vụ nổ của thùng (bán kính lớn hơn) tự trông to hơn. */
+                .Float("referenceRadius", 1.9f)
+                .Apply();
+            BlastOutPrefabFactory.BindBase(player);
+
+            return player;
         }
 
         static TrajectoryPreview BuildPreview(SpriteRenderer dotPrefab, Object tuning)
@@ -219,7 +242,7 @@ namespace Dev.Scripts.Editor.BlastOut
         static BlastGameController BuildController(Object levelSet, Object tuning, Camera camera,
             AimController aim, LevelBuilder builder, CollectZone zone, TrajectoryPreview preview,
             Transform launcherRoot, Transform projectileRoot, BlastProjectile projectilePrefab,
-            BlastHudView hud)
+            BlastHudView hud, BlastVfxPlayer vfx)
         {
             var go = new GameObject("BlastGameController");
             var controller = go.AddComponent<BlastGameController>();
@@ -236,6 +259,7 @@ namespace Dev.Scripts.Editor.BlastOut
                 .Ref("projectileContainer", projectileRoot)
                 .Ref("projectilePrefab", projectilePrefab)
                 .Ref("hud", hud)
+                .Ref("vfx", vfx)
                 .Apply();
 
             /* Controller là BaseMono DUY NHẤT đăng ký nhịp — mọi thứ khác được nó gọi xuống.
