@@ -14,6 +14,9 @@ namespace Dev.Scripts.BlastOut.Gameplay
     {
         [SerializeField] Transform container;
         [SerializeField] Transform platformPrefab;
+        [Tooltip("Kích thước sprite bệ theo world unit, lấy lúc dựng prefab. Dùng để quy đổi chiều " +
+                 "dài khai báo trong level data sang scale.")]
+        [SerializeField] Vector2 platformSpriteSize = Vector2.one;
         [SerializeField] TargetBlock blockPrefab;
         [SerializeField] ExplosiveBarrel barrelPrefab;
         [Tooltip("Độ dày bệ. Chiều dài lấy từ level data, nên một prefab bệ dùng cho mọi kích thước.")]
@@ -53,9 +56,15 @@ namespace Dev.Scripts.BlastOut.Gameplay
 
                 /* Giãn bằng localScale chứ không bằng SpriteRenderer.size: sprite 1×1 không có
                    border nên draw mode Sliced sẽ cảnh báo, còn scale thì kéo luôn cả BoxCollider2D
-                   theo — một prefab bệ dùng được cho mọi chiều dài khai báo trong level data. */
+                   theo — một prefab bệ dùng được cho mọi chiều dài khai báo trong level data.
+
+                   Chia cho kích thước sprite để Width/Thickness trong level data luôn là ĐỘ DÀI THẬT
+                   theo world unit, không phụ thuộc art đang dùng sprite bao nhiêu pixel. */
                 platform.position = placement.Center;
-                platform.localScale = new Vector3(placement.Width, platformThickness, 1f);
+                platform.localScale = new Vector3(
+                    placement.Width / Mathf.Max(0.0001f, platformSpriteSize.x),
+                    platformThickness / Mathf.Max(0.0001f, platformSpriteSize.y),
+                    1f);
 
                 platforms.Add(platform.gameObject);
             }

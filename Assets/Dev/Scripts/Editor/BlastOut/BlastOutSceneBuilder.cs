@@ -39,9 +39,15 @@ namespace Dev.Scripts.BlastOut.Authoring
             var levelSet = BlastOutAssetFactory.CreateLevelSet(level);
             var trailMaterial = BlastOutPrefabFactory.CreateTrailMaterial();
 
-            var platformPrefab = BlastOutPrefabFactory.CreatePlatform(square);
-            var blockPrefab = BlastOutPrefabFactory.CreateBlock(square, tuning);
-            var barrelPrefab = BlastOutPrefabFactory.CreateBarrel(square, tuning);
+            /* Vật thể trong thế giới dùng art Kenney (CC0); riêng đạn và chấm quỹ đạo vẫn là hình
+               tròn tự sinh vì chúng cần tô màu theo trạng thái. */
+            var blockArt = BlastOutAssetFactory.LoadKenney("Gameplay/block_wood.png");
+            var barrelArt = BlastOutAssetFactory.LoadKenney("Gameplay/barrel_explosive.png");
+            var platformArt = BlastOutAssetFactory.LoadKenney("Gameplay/platform_metal.png");
+
+            var platformPrefab = BlastOutPrefabFactory.CreatePlatform(platformArt);
+            var blockPrefab = BlastOutPrefabFactory.CreateBlock(blockArt, tuning);
+            var barrelPrefab = BlastOutPrefabFactory.CreateBarrel(barrelArt, tuning);
             var projectilePrefab = BlastOutPrefabFactory.CreateProjectile(circle, tuning, trailMaterial);
             var dotPrefab = BlastOutPrefabFactory.CreateDot(circle);
 
@@ -55,10 +61,10 @@ namespace Dev.Scripts.BlastOut.Authoring
             var levelRoot = NewChild(containers, "Level");
             var projectileRoot = NewChild(containers, "Projectiles");
 
-            var hud = BuildHud(square);
+            var hud = BuildHud();
             BuildEventSystem();
             var aim = BuildAim(launcher, muzzle, barrelPivot, preview, tuning);
-            var builder = BuildLevelBuilder(levelRoot, platformPrefab, blockPrefab, barrelPrefab);
+            var builder = BuildLevelBuilder(levelRoot, platformPrefab, blockPrefab, barrelPrefab, platformArt);
             var controller = BuildController(levelSet, tuning, camera, aim, builder, collectZone, preview,
                 launcher.transform, projectileRoot, projectilePrefab, hud);
 
@@ -171,16 +177,23 @@ namespace Dev.Scripts.BlastOut.Authoring
         }
 
         static LevelBuilder BuildLevelBuilder(Transform container, Transform platformPrefab,
-            TargetBlock blockPrefab, ExplosiveBarrel barrelPrefab)
+            TargetBlock blockPrefab, ExplosiveBarrel barrelPrefab, Sprite platformArt)
         {
             var go = new GameObject("LevelBuilder");
             var builder = go.AddComponent<LevelBuilder>();
+
+            /* Kích thước sprite theo world unit = pixel / pixelsPerUnit. Builder cần số này để quy
+               đổi chiều dài bệ trong level data sang scale. */
+            var spriteSize = platformArt
+                ? platformArt.rect.size / platformArt.pixelsPerUnit
+                : Vector2.one;
 
             new SerializedFieldWriter(builder)
                 .Ref("container", container)
                 .Ref("platformPrefab", platformPrefab)
                 .Ref("blockPrefab", blockPrefab)
                 .Ref("barrelPrefab", barrelPrefab)
+                .Vec2("platformSpriteSize", spriteSize)
                 .Float("platformThickness", 0.32f)
                 .Apply();
             BlastOutPrefabFactory.BindBase(builder);
@@ -228,11 +241,12 @@ namespace Dev.Scripts.BlastOut.Authoring
             BlastOutPrefabFactory.BindBase(launcher);
         }
 
-        static readonly Color AccentColor = new Color32(0x3A, 0x7B, 0xD5, 0xFF);
-        static readonly Color RestartColor = new Color32(0x4A, 0x52, 0x63, 0xFF);
-
-        static BlastHudView BuildHud(Sprite square)
+        static BlastHudView BuildHud()
         {
+            /* Nút dùng art Kenney (CC0) nên tô trắng để giữ nguyên màu sprite. */
+            var blueButton = BlastOutAssetFactory.LoadKenney("UI/button_blue.png");
+            var greyButton = BlastOutAssetFactory.LoadKenney("UI/button_grey.png");
+
             var go = new GameObject("HUD", typeof(RectTransform));
             var canvas = go.AddComponent<Canvas>();
             canvas.renderMode = RenderMode.ScreenSpaceOverlay;
@@ -252,10 +266,10 @@ namespace Dev.Scripts.BlastOut.Authoring
             hintLabel.color = new Color(0.66f, 0.71f, 0.83f);
 
             /* Nút Restart luôn hiện ở góc trên giữa để thử lại nhanh khi đang chơi. */
-            var restartButton = NewButton(go.transform, "RestartButton", "RESTART", square, RestartColor,
+            var restartButton = NewButton(go.transform, "RestartButton", "RESTART", greyButton,
                 new Vector2(0.5f, 1f), new Vector2(0f, -78f), new Vector2(240f, 96f), 34f, out _);
 
-            var resultRoot = BuildResultPanel(go.transform, square, out var resultLabel,
+            var resultRoot = BuildResultPanel(go.transform, blueButton, out var resultLabel,
                 out var actionButton, out var actionLabel);
 
             var hud = go.AddComponent<BlastHudView>();
@@ -276,7 +290,7 @@ namespace Dev.Scripts.BlastOut.Authoring
 
         /* Panel phủ kín màn khi thắng/thua: nền mờ chặn thao tác phía sau, một dòng kết quả và một
            nút chính (Next khi thắng, Retry khi thua). Tắt sẵn, controller bật khi có kết quả. */
-        static GameObject BuildResultPanel(Transform parent, Sprite square, out TMP_Text resultLabel,
+        static GameObject BuildResultPanel(Transform parent, Sprite buttonSprite, out TMP_Text resultLabel,
             out UnityEngine.UI.Button actionButton, out TMP_Text actionLabel)
         {
             var root = new GameObject("ResultPanel", typeof(RectTransform));
@@ -293,7 +307,7 @@ namespace Dev.Scripts.BlastOut.Authoring
                 new Vector2(0.5f, 0.5f), new Vector2(0f, 150f), TextAlignmentOptions.Center);
             resultLabel.rectTransform.sizeDelta = new Vector2(1000f, 120f);
 
-            actionButton = NewButton(root.transform, "ActionButton", "NEXT", square, AccentColor,
+            actionButton = NewButton(root.transform, "ActionButton", "NEXT", buttonSprite,
                 new Vector2(0.5f, 0.5f), new Vector2(0f, -40f), new Vector2(380f, 130f), 46f, out actionLabel);
 
             root.SetActive(false);
@@ -301,14 +315,18 @@ namespace Dev.Scripts.BlastOut.Authoring
         }
 
         static UnityEngine.UI.Button NewButton(Transform parent, string name, string text, Sprite sprite,
-            Color background, Vector2 anchor, Vector2 offset, Vector2 size, float fontSize, out TMP_Text label)
+            Vector2 anchor, Vector2 offset, Vector2 size, float fontSize, out TMP_Text label)
         {
             var go = new GameObject(name, typeof(RectTransform));
             go.transform.SetParent(parent, false);
 
             var image = go.AddComponent<UnityEngine.UI.Image>();
             image.sprite = sprite;
-            image.color = background;
+            image.color = Color.white;
+
+            /* Nút Kenney có viền bo và phần chân dày — Sliced mới giữ đúng tỉ lệ viền khi kéo giãn,
+               Simple sẽ làm viền méo theo kích thước nút. */
+            image.type = UnityEngine.UI.Image.Type.Sliced;
 
             var rect = (RectTransform)go.transform;
             rect.anchorMin = anchor;
@@ -322,6 +340,8 @@ namespace Dev.Scripts.BlastOut.Authoring
 
             label = NewLabel(go.transform, "Label", text, fontSize,
                 new Vector2(0.5f, 0.5f), Vector2.zero, TextAlignmentOptions.Center);
+            /* Nút Kenney nền sáng — chữ trắng mặc định sẽ chìm, nên dùng màu tối. */
+            label.color = new Color(0.1f, 0.13f, 0.2f);
             /* Nhãn phủ kín nút để căn giữa dù đổi kích thước. */
             Stretch(label.rectTransform);
 

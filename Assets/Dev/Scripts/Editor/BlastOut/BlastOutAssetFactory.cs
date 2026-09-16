@@ -17,12 +17,25 @@ namespace Dev.Scripts.BlastOut.Authoring
         public const string DataFolder = "Assets/Dev/Data/BlastOut";
         public const string PrefabFolder = "Assets/Dev/Prefabs/BlastOut";
 
-        public static readonly Color BlockColor = new Color32(0xE8, 0x50, 0x3A, 0xFF);
-        public static readonly Color BarrelColor = new Color32(0xF0, 0xA6, 0x3C, 0xFF);
-        public static readonly Color PlatformColor = new Color32(0x5B, 0x64, 0x79, 0xFF);
+        /* Vật thể dùng art Kenney: tô TRẮNG để sprite hiện đúng màu gốc, không bị nhuộm đè. */
+        public static readonly Color BlockColor = Color.white;
+        public static readonly Color BarrelColor = Color.white;
+        public static readonly Color PlatformColor = Color.white;
         public static readonly Color ShellColor = new Color32(0xE4, 0xF4, 0xFA, 0xFF);
         public static readonly Color DotColor = new Color32(0x8F, 0xDC, 0xEA, 0xFF);
         public static readonly Color SkyColor = new Color32(0x0B, 0x12, 0x24, 0xFF);
+
+        /* Art từ Kenney (CC0) nằm sẵn trên đĩa — khác với sprite hình học do tool tự sinh.
+           Sprite đã có màu riêng nên vật thể dùng art được tô trắng để giữ nguyên hình gốc. */
+        public const string KenneyFolder = "Assets/Dev/Sprites/Kenney";
+
+        public static Sprite LoadKenney(string relativePath)
+        {
+            var path = $"{KenneyFolder}/{relativePath}";
+            var sprite = AssetDatabase.LoadAssetAtPath<Sprite>(path);
+            if (!sprite) Debug.LogError($"[BlastOut] Thiếu sprite: {path}");
+            return sprite;
+        }
 
         public static void EnsureFolder(string path)
         {
