@@ -46,7 +46,7 @@ namespace Dev.Scripts.BlastOut.UI
                 /* Chuỗi UI để ASCII: atlas LiberationSans SDF dựng sẵn của TMP không có dấu tiếng
                    Việt, để nguyên "HOÀN THÀNH" là ra một hàng ô vuông trên máy thật. */
                 case BlastPhase.Won:
-                    ShowBanner("LEVEL CLEAR - TAP TO REPLAY", wonColor);
+                    ShowBanner("LEVEL CLEAR - TAP TO CONTINUE", wonColor);
                     break;
                 case BlastPhase.Lost:
                     ShowBanner("OUT OF AMMO - TAP TO RETRY", lostColor);

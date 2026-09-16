@@ -164,6 +164,28 @@ namespace Dev.Scripts.BlastOut.Authoring
             return level;
         }
 
+        /* Gom các level đã tạo vào một BlastLevelSet — đây là "chỗ lưu level" mà controller đọc.
+           Thêm level về sau chỉ cần dựng thêm config rồi kéo vào mảng này trong Inspector. */
+        public static BlastLevelSet CreateLevelSet(params BlastLevelConfig[] levels)
+        {
+            EnsureFolder(DataFolder);
+            var set = CreateOrLoad<BlastLevelSet>($"{DataFolder}/level_set.asset");
+
+            var writer = new SerializedFieldWriter(set);
+            var array = writer.ArrayOf("levels", levels.Length);
+            if (array != null)
+            {
+                for (var i = 0; i < levels.Length; i++)
+                {
+                    array.GetArrayElementAtIndex(i).objectReferenceValue = levels[i];
+                }
+            }
+            writer.Apply();
+
+            EditorUtility.SetDirty(set);
+            return set;
+        }
+
         static T CreateOrLoad<T>(string path) where T : ScriptableObject
         {
             var existing = AssetDatabase.LoadAssetAtPath<T>(path);

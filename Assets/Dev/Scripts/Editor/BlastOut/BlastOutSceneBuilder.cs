@@ -18,11 +18,11 @@ namespace Dev.Scripts.BlastOut.Authoring
           lại tool này — chỉ tạo thêm một BlastLevelConfig rồi kéo vào controller. */
     public static class BlastOutSceneBuilder
     {
-        const string ScenePath = "Assets/Dev/Scenes/BlastOut.unity";
+        const string ScenePath = "Assets/Dev/Scenes/GameScene.unity";
         static readonly Color SteelColor = new Color32(0x6E, 0x76, 0x88, 0xFF);
         static readonly Color ZoneColor = new Color32(0x2E, 0xD0, 0x9A, 0x44);
 
-        [MenuItem("Tools/Blast Out/Build Level 1 Scene", false, 0)]
+        [MenuItem("Tools/Blast Out/Build Game Scene", false, 0)]
         public static void Build()
         {
             /* Mở scene trắng TRƯỚC khi tạo prefab: SaveAsPrefabAsset dựng object tạm trong scene
@@ -36,6 +36,7 @@ namespace Dev.Scripts.BlastOut.Authoring
 
             var tuning = BlastOutAssetFactory.CreateTuning();
             var level = BlastOutAssetFactory.CreateLevelOne();
+            var levelSet = BlastOutAssetFactory.CreateLevelSet(level);
             var trailMaterial = BlastOutPrefabFactory.CreateTrailMaterial();
 
             var platformPrefab = BlastOutPrefabFactory.CreatePlatform(square);
@@ -57,7 +58,7 @@ namespace Dev.Scripts.BlastOut.Authoring
             var hud = BuildHud();
             var aim = BuildAim(launcher, muzzle, barrelPivot, preview, tuning);
             var builder = BuildLevelBuilder(levelRoot, platformPrefab, blockPrefab, barrelPrefab);
-            var controller = BuildController(level, tuning, camera, aim, builder, collectZone, preview,
+            var controller = BuildController(levelSet, tuning, camera, aim, builder, collectZone, preview,
                 launcher.transform, projectileRoot, projectilePrefab, hud);
 
             BuildSceneLauncher(preview, aim, builder, collectZone, hud, controller);
@@ -186,7 +187,7 @@ namespace Dev.Scripts.BlastOut.Authoring
             return builder;
         }
 
-        static BlastGameController BuildController(Object level, Object tuning, Camera camera,
+        static BlastGameController BuildController(Object levelSet, Object tuning, Camera camera,
             AimController aim, LevelBuilder builder, CollectZone zone, TrajectoryPreview preview,
             Transform launcherRoot, Transform projectileRoot, BlastProjectile projectilePrefab,
             BlastHudView hud)
@@ -195,7 +196,7 @@ namespace Dev.Scripts.BlastOut.Authoring
             var controller = go.AddComponent<BlastGameController>();
 
             new SerializedFieldWriter(controller)
-                .Ref("level", level)
+                .Ref("levelSet", levelSet)
                 .Ref("tuning", tuning)
                 .Ref("view", camera)
                 .Ref("aim", aim)

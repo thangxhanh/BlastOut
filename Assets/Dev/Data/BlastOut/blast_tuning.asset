@@ -1,0 +1,39 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5cc329518cea68d4584ddbf753b60aa7, type: 3}
+  m_Name: blast_tuning
+  m_EditorClassIdentifier: Dev.Runtime::Dev.Scripts.BlastOut.Config.BlastTuning
+  id: 
+  pools: {fileID: 11400000, guid: 866f23a3800914ad285dc839fa4da6d2, type: 2}
+  ticker: {fileID: 11400000, guid: b1259f9e47f5d476cbfd3237af191b98, type: 2}
+  earlyTick: 0
+  tick: 0
+  lateTick: 0
+  fixedTick: 0
+  minDragDistance: 0.35
+  maxDragDistance: 3.5
+  minLaunchSpeed: 8
+  maxLaunchSpeed: 20
+  projectileGravityScale: 2.2
+  projectileLifetime: 6
+  blastRadius: 3
+  blastForce: 12
+  blastUpwardBias: 0.45
+  blastTorque: 6
+  barrelRadius: 3.8
+  barrelForce: 16
+  barrelChainDelay: 0.12
+  settleSpeedThreshold: 0.25
+  settleHoldTime: 0.4
+  settleTimeout: 4
+  trajectoryPointCount: 14
+  trajectoryTimeStep: 0.07

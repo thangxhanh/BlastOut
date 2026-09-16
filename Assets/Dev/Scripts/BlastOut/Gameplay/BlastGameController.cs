@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using Dacodelaac.Core;
+using Dacodelaac.DataStorage;
 using Dev.Scripts.BlastOut.Config;
 using Dev.Scripts.BlastOut.Core;
 using Dev.Scripts.BlastOut.UI;
@@ -15,8 +16,12 @@ namespace Dev.Scripts.BlastOut.Gameplay
     public class BlastGameController : BaseMono
     {
         [Header("Dữ liệu")]
-        [SerializeField] BlastLevelConfig level;
+        [SerializeField] BlastLevelSet levelSet;
         [SerializeField] BlastTuning tuning;
+
+        /* Tiến độ lưu qua GameData để mở lại game là vào đúng level đang chơi dở. Key riêng của
+           BlastOut, không đụng key nào của framework. */
+        const string LevelKey = "blast_current_level";
 
         [Header("Thành phần scene")]
         [SerializeField] Camera view;
@@ -34,6 +39,8 @@ namespace Dev.Scripts.BlastOut.Gameplay
 
         BlastResolver resolver;
         ProjectilePool projectiles;
+        BlastLevelConfig level;
+        int levelIndex;
         int ammoIndex;
         float settleElapsed;
         float settleHeld;
@@ -55,6 +62,7 @@ namespace Dev.Scripts.BlastOut.Gameplay
             session.PhaseChanged += OnPhaseChanged;
             session.AmmoChanged += OnAmmoChanged;
 
+            levelIndex = Mathf.Clamp(GameData.Get<int>(LevelKey, 0), 0, Mathf.Max(0, levelSet.Count - 1));
             StartLevel();
         }
 
@@ -68,6 +76,8 @@ namespace Dev.Scripts.BlastOut.Gameplay
 
         void StartLevel()
         {
+            level = levelSet.Get(levelIndex);
+
             ammoIndex = 0;
             flying.Clear();
             projectiles.DeactivateAll();
@@ -88,6 +98,16 @@ namespace Dev.Scripts.BlastOut.Gameplay
             StartLevel();
         }
 
+        /* Thắng thì sang level kế. Hết bộ level thì quay vòng về đầu — với người chơi casual, cụt
+           ở màn cuối khó chịu hơn là chơi lại từ đầu. Tiến độ lưu ngay để mở lại vào đúng chỗ. */
+        void AdvanceLevel()
+        {
+            levelIndex = levelSet.Count > 0 ? (levelIndex + 1) % levelSet.Count : 0;
+            GameData.Set(LevelKey, levelIndex);
+            GameData.Save();
+            RestartLevel();
+        }
+
         public override void Tick()
         {
             var deltaTime = Time.deltaTime;
@@ -101,6 +121,8 @@ namespace Dev.Scripts.BlastOut.Gameplay
                     TickSettle(deltaTime);
                     break;
                 case BlastPhase.Won:
+                    if (Input.GetMouseButtonDown(0)) AdvanceLevel();
+                    return;
                 case BlastPhase.Lost:
                     if (Input.GetMouseButtonDown(0)) RestartLevel();
                     return;

@@ -9,14 +9,15 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 228b665c890547eba40bcf6f5598eae9, type: 3}
-  m_Name: pools
-  m_EditorClassIdentifier: 
-  id: pools
-  pools: {fileID: 11400000}
+  m_Script: {fileID: 11500000, guid: 3d51d1cda50f2e540b0a9acbd4d36551, type: 3}
+  m_Name: level_set
+  m_EditorClassIdentifier: Dev.Runtime::Dev.Scripts.BlastOut.Config.BlastLevelSet
+  id: 
+  pools: {fileID: 11400000, guid: 866f23a3800914ad285dc839fa4da6d2, type: 2}
   ticker: {fileID: 11400000, guid: b1259f9e47f5d476cbfd3237af191b98, type: 2}
   earlyTick: 0
   tick: 0
   lateTick: 0
   fixedTick: 0
-  poolDatas: []
+  levels:
+  - {fileID: 11400000, guid: fd55968a51a1b6a49b0a6f9a205e2acd, type: 2}
