@@ -61,6 +61,8 @@ namespace Dev.Scripts.BlastOut.Gameplay
             collectZone.BlockCollected += OnBlockCollected;
             session.PhaseChanged += OnPhaseChanged;
             session.AmmoChanged += OnAmmoChanged;
+            hud.ActionPressed += OnHudAction;
+            hud.RestartPressed += RestartLevel;
 
             levelIndex = Mathf.Clamp(GameData.Get<int>(LevelKey, 0), 0, Mathf.Max(0, levelSet.Count - 1));
             StartLevel();
@@ -72,6 +74,15 @@ namespace Dev.Scripts.BlastOut.Gameplay
             collectZone.BlockCollected -= OnBlockCollected;
             session.PhaseChanged -= OnPhaseChanged;
             session.AmmoChanged -= OnAmmoChanged;
+            hud.ActionPressed -= OnHudAction;
+            hud.RestartPressed -= RestartLevel;
+        }
+
+        /* Nút chính trên panel kết quả: thắng thì đi tiếp, thua thì chơi lại đúng level đó. */
+        void OnHudAction()
+        {
+            if (session.Phase == BlastPhase.Won) AdvanceLevel();
+            else if (session.Phase == BlastPhase.Lost) RestartLevel();
         }
 
         void StartLevel()
@@ -120,11 +131,10 @@ namespace Dev.Scripts.BlastOut.Gameplay
                 case BlastPhase.Resolving:
                     TickSettle(deltaTime);
                     break;
+                /* Thắng/thua thì dừng lại chờ người chơi bấm nút trên panel — không xử lý input ngắm
+                   nữa. Việc "bấm gì thì làm gì" nằm ở OnHudAction, HUD chỉ bắn tín hiệu ra. */
                 case BlastPhase.Won:
-                    if (Input.GetMouseButtonDown(0)) AdvanceLevel();
-                    return;
                 case BlastPhase.Lost:
-                    if (Input.GetMouseButtonDown(0)) RestartLevel();
                     return;
             }
 

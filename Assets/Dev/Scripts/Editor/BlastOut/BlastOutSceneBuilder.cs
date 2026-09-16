@@ -55,7 +55,8 @@ namespace Dev.Scripts.BlastOut.Authoring
             var levelRoot = NewChild(containers, "Level");
             var projectileRoot = NewChild(containers, "Projectiles");
 
-            var hud = BuildHud();
+            var hud = BuildHud(square);
+            BuildEventSystem();
             var aim = BuildAim(launcher, muzzle, barrelPivot, preview, tuning);
             var builder = BuildLevelBuilder(levelRoot, platformPrefab, blockPrefab, barrelPrefab);
             var controller = BuildController(levelSet, tuning, camera, aim, builder, collectZone, preview,
@@ -227,7 +228,10 @@ namespace Dev.Scripts.BlastOut.Authoring
             BlastOutPrefabFactory.BindBase(launcher);
         }
 
-        static BlastHudView BuildHud()
+        static readonly Color AccentColor = new Color32(0x3A, 0x7B, 0xD5, 0xFF);
+        static readonly Color RestartColor = new Color32(0x4A, 0x52, 0x63, 0xFF);
+
+        static BlastHudView BuildHud(Sprite square)
         {
             var go = new GameObject("HUD", typeof(RectTransform));
             var canvas = go.AddComponent<Canvas>();
@@ -247,23 +251,99 @@ namespace Dev.Scripts.BlastOut.Authoring
                 new Vector2(0.5f, 0f), new Vector2(0f, 190f), TextAlignmentOptions.Center);
             hintLabel.color = new Color(0.66f, 0.71f, 0.83f);
 
-            var bannerRoot = new GameObject("Banner", typeof(RectTransform));
-            bannerRoot.transform.SetParent(go.transform, false);
-            var bannerLabel = NewLabel(bannerRoot.transform, "BannerLabel", "LEVEL CLEAR", 52f,
-                new Vector2(0.5f, 0f), new Vector2(0f, 120f), TextAlignmentOptions.Center);
-            bannerRoot.SetActive(false);
+            /* Nút Restart luôn hiện ở góc trên giữa để thử lại nhanh khi đang chơi. */
+            var restartButton = NewButton(go.transform, "RestartButton", "RESTART", square, RestartColor,
+                new Vector2(0.5f, 1f), new Vector2(0f, -78f), new Vector2(240f, 96f), 34f, out _);
+
+            var resultRoot = BuildResultPanel(go.transform, square, out var resultLabel,
+                out var actionButton, out var actionLabel);
 
             var hud = go.AddComponent<BlastHudView>();
             new SerializedFieldWriter(hud)
                 .Ref("levelLabel", levelLabel)
                 .Ref("ammoLabel", ammoLabel)
                 .Ref("hintLabel", hintLabel)
-                .Ref("bannerLabel", bannerLabel)
-                .Ref("bannerRoot", bannerRoot)
+                .Ref("resultRoot", resultRoot)
+                .Ref("resultLabel", resultLabel)
+                .Ref("actionButton", actionButton)
+                .Ref("actionLabel", actionLabel)
+                .Ref("restartButton", restartButton)
                 .Apply();
             BlastOutPrefabFactory.BindBase(hud);
 
             return hud;
+        }
+
+        /* Panel phủ kín màn khi thắng/thua: nền mờ chặn thao tác phía sau, một dòng kết quả và một
+           nút chính (Next khi thắng, Retry khi thua). Tắt sẵn, controller bật khi có kết quả. */
+        static GameObject BuildResultPanel(Transform parent, Sprite square, out TMP_Text resultLabel,
+            out UnityEngine.UI.Button actionButton, out TMP_Text actionLabel)
+        {
+            var root = new GameObject("ResultPanel", typeof(RectTransform));
+            root.transform.SetParent(parent, false);
+            Stretch((RectTransform)root.transform);
+
+            var dim = new GameObject("Dim", typeof(RectTransform));
+            dim.transform.SetParent(root.transform, false);
+            var dimImage = dim.AddComponent<UnityEngine.UI.Image>();
+            dimImage.color = new Color(0.03f, 0.05f, 0.1f, 0.72f);
+            Stretch(dimImage.rectTransform);
+
+            resultLabel = NewLabel(root.transform, "ResultLabel", "LEVEL CLEAR", 74f,
+                new Vector2(0.5f, 0.5f), new Vector2(0f, 150f), TextAlignmentOptions.Center);
+            resultLabel.rectTransform.sizeDelta = new Vector2(1000f, 120f);
+
+            actionButton = NewButton(root.transform, "ActionButton", "NEXT", square, AccentColor,
+                new Vector2(0.5f, 0.5f), new Vector2(0f, -40f), new Vector2(380f, 130f), 46f, out actionLabel);
+
+            root.SetActive(false);
+            return root;
+        }
+
+        static UnityEngine.UI.Button NewButton(Transform parent, string name, string text, Sprite sprite,
+            Color background, Vector2 anchor, Vector2 offset, Vector2 size, float fontSize, out TMP_Text label)
+        {
+            var go = new GameObject(name, typeof(RectTransform));
+            go.transform.SetParent(parent, false);
+
+            var image = go.AddComponent<UnityEngine.UI.Image>();
+            image.sprite = sprite;
+            image.color = background;
+
+            var rect = (RectTransform)go.transform;
+            rect.anchorMin = anchor;
+            rect.anchorMax = anchor;
+            rect.pivot = anchor;
+            rect.sizeDelta = size;
+            rect.anchoredPosition = offset;
+
+            var button = go.AddComponent<UnityEngine.UI.Button>();
+            button.targetGraphic = image;
+
+            label = NewLabel(go.transform, "Label", text, fontSize,
+                new Vector2(0.5f, 0.5f), Vector2.zero, TextAlignmentOptions.Center);
+            /* Nhãn phủ kín nút để căn giữa dù đổi kích thước. */
+            Stretch(label.rectTransform);
+
+            return button;
+        }
+
+        static void Stretch(RectTransform rect)
+        {
+            rect.anchorMin = Vector2.zero;
+            rect.anchorMax = Vector2.one;
+            rect.pivot = new Vector2(0.5f, 0.5f);
+            rect.sizeDelta = Vector2.zero;
+            rect.anchoredPosition = Vector2.zero;
+        }
+
+        /* UI Button cần EventSystem mới nhận được click. Scene dựng từ scratch nên phải tạo tay —
+           thiếu nó thì nút hiện ra nhưng bấm không ăn, một cái bẫy rất dễ mất thời gian. */
+        static void BuildEventSystem()
+        {
+            var go = new GameObject("EventSystem");
+            go.AddComponent<UnityEngine.EventSystems.EventSystem>();
+            go.AddComponent<UnityEngine.EventSystems.StandaloneInputModule>();
         }
 
         static TMP_Text NewLabel(Transform parent, string name, string text, float size,

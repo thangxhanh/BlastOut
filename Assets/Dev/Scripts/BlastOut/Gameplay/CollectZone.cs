@@ -21,7 +21,11 @@ namespace Dev.Scripts.BlastOut.Gameplay
             /* Vùng thu kéo sâu xuống dưới đáy camera để khối bay nhanh không xuyên qua giữa hai frame. */
             const float depth = 6f;
 
-            area.size = new Vector2(width, depth);
+            /* Collider RỘNG HƠN màn nhiều: một cú nổ có thể thổi khối bay lệch hẳn ra ngoài mép rồi
+               mới rơi. Bắt trọn mọi khối rơi xuống dưới mức này — rơi khỏi màn tức là "đã hạ", đúng
+               cảm giác người chơi mong đợi. Riêng phần NHÌN THẤY vẫn để đúng bề ngang màn. */
+            var catchWidth = Mathf.Max(width * 6f, 60f);
+            area.size = new Vector2(catchWidth, depth);
             area.offset = Vector2.zero;
             transform.position = new Vector3(0f, topY - depth * 0.5f, 0f);
 
