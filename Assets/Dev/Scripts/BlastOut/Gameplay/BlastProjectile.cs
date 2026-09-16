@@ -112,7 +112,8 @@ namespace Dev.Scripts.BlastOut.Gameplay
 
         void OnCollisionEnter2D(Collision2D collision)
         {
-            /* Chạm đất/bệ mà chưa kích nổ thì vẫn nổ — người chơi không bao giờ mất lượt vì quên chạm. */
+            /* Chạm đất/bệ mà chưa kích nổ thì vẫn nổ — người chơi không bao giờ mất lượt vì quên chạm.
+               Không phát tiếng va chạm ở đây: vụ nổ xảy ra ngay lập tức và tiếng nổ đã che mất. */
             Detonate();
         }
 

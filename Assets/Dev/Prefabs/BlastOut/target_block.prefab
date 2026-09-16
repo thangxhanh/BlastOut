@@ -188,3 +188,4 @@ MonoBehaviour:
   fixedTick: 0
   body: {fileID: 5587493225364755815}
   tuning: {fileID: 11400000, guid: f8ee599dc8503fe4689b23bf40965c0d, type: 2}
+  hardImpactSpeed: 2.5

@@ -67,17 +67,19 @@ namespace Dev.Scripts.Editor.BlastOut
             var projectileRoot = NewChild(containers, "Projectiles");
 
             var vfx = BuildVfx(vfxPrefab, containers);
+            var audioPlayer = BuildAudio();
+            var impact = BuildImpactFeedback(camera.transform);
             var hud = BuildHud();
             BuildEventSystem();
             var aim = BuildAim(launcher, muzzle, barrelPivot, preview, tuning);
             var builder = BuildLevelBuilder(levelRoot, platformPrefab, movingPlatformPrefab, blockPrefab,
                 barrelPrefab, platformArt);
             var controller = BuildController(levelSet, tuning, camera, aim, builder, collectZone, preview,
-                launcher.transform, projectileRoot, projectilePrefab, hud, vfx);
+                launcher.transform, projectileRoot, projectilePrefab, hud, vfx, audioPlayer, impact);
 
-            /* vfx trước controller: controller đăng ký nghe vụ nổ lúc Initialize, lúc đó pool hiệu
-               ứng phải dựng xong rồi. */
-            BuildSceneLauncher(preview, aim, builder, collectZone, hud, vfx, controller);
+            /* vfx/audio/impact trước controller: controller đăng ký nghe vụ nổ lúc Initialize, lúc đó
+               pool hiệu ứng và vị trí gốc của camera phải sẵn sàng rồi. */
+            BuildSceneLauncher(preview, aim, builder, collectZone, hud, vfx, audioPlayer, impact, controller);
 
             BlastOutAssetFactory.EnsureFolder("Assets/Dev/Scenes");
             EditorSceneManager.SaveScene(scene, ScenePath);
@@ -142,6 +144,67 @@ namespace Dev.Scripts.Editor.BlastOut
             muzzle.localPosition = new Vector3(barrelLength + 0.15f, 0f, 0f);
 
             return root;
+        }
+
+        static BlastAudio BuildAudio()
+        {
+            const string folder = "Assets/Dev/Audio/SFX/BlastOut";
+            var go = new GameObject("BlastAudio");
+            var player = go.AddComponent<BlastAudio>();
+
+            /* Bốn source quay vòng: nổ dây chuyền phát vài tiếng sát nhau, một source thì tiếng sau
+               cắt ngang tiếng trước. */
+            var sources = new Object[4];
+            for (var i = 0; i < sources.Length; i++)
+            {
+                var source = go.AddComponent<AudioSource>();
+                source.playOnAwake = false;
+                /* spatialBlend 0 = 2D: game gọn trong một màn hình, gắn âm theo vị trí chỉ làm tiếng
+                   nổ ở mép màn nhỏ đi vô cớ. */
+                source.spatialBlend = 0f;
+                sources[i] = source;
+            }
+
+            new SerializedFieldWriter(player)
+                .Refs("sources", sources)
+                .Ref("shoot", LoadClip(folder, "sfx_shoot"))
+                .Ref("explosion", LoadClip(folder, "sfx_explosion"))
+                .Ref("impact", LoadClip(folder, "sfx_impact"))
+                .Ref("collect", LoadClip(folder, "sfx_collect"))
+                .Ref("win", LoadClip(folder, "sfx_win"))
+                .Ref("lose", LoadClip(folder, "sfx_lose"))
+                .Float("sfxVolume", 0.8f)
+                .Float("bigBlastRadius", 2.5f)
+                .Float("impactCooldown", 0.08f)
+                .Apply();
+            BlastOutPrefabFactory.BindBase(player);
+
+            return player;
+        }
+
+        static AudioClip LoadClip(string folder, string name)
+        {
+            var clip = AssetDatabase.LoadAssetAtPath<AudioClip>($"{folder}/{name}.ogg");
+            if (!clip) Debug.LogError($"[BlastOut] Thiếu clip: {folder}/{name}.ogg");
+            return clip;
+        }
+
+        static BlastImpactFeedback BuildImpactFeedback(Transform cameraTransform)
+        {
+            var go = new GameObject("BlastImpactFeedback");
+            var feedback = go.AddComponent<BlastImpactFeedback>();
+
+            new SerializedFieldWriter(feedback)
+                .Ref("cameraTransform", cameraTransform)
+                .Float("hitStopDuration", 0.055f)
+                .Float("shakeDuration", 0.22f)
+                .Float("shakeStrength", 0.22f)
+                .Float("shakeFrequency", 26f)
+                .Float("referenceRadius", 1.9f)
+                .Apply();
+            BlastOutPrefabFactory.BindBase(feedback);
+
+            return feedback;
         }
 
         static BlastVfxPlayer BuildVfx(ParticleSystem prefab, Transform parent)
@@ -242,7 +305,7 @@ namespace Dev.Scripts.Editor.BlastOut
         static BlastGameController BuildController(Object levelSet, Object tuning, Camera camera,
             AimController aim, LevelBuilder builder, CollectZone zone, TrajectoryPreview preview,
             Transform launcherRoot, Transform projectileRoot, BlastProjectile projectilePrefab,
-            BlastHudView hud, BlastVfxPlayer vfx)
+            BlastHudView hud, BlastVfxPlayer vfx, BlastAudio audioPlayer, BlastImpactFeedback impact)
         {
             var go = new GameObject("BlastGameController");
             var controller = go.AddComponent<BlastGameController>();
@@ -260,6 +323,8 @@ namespace Dev.Scripts.Editor.BlastOut
                 .Ref("projectilePrefab", projectilePrefab)
                 .Ref("hud", hud)
                 .Ref("vfx", vfx)
+                .Ref("audioPlayer", audioPlayer)
+                .Ref("impact", impact)
                 .Apply();
 
             /* Controller là BaseMono DUY NHẤT đăng ký nhịp — mọi thứ khác được nó gọi xuống.

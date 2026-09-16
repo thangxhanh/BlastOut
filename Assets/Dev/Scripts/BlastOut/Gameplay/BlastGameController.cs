@@ -34,6 +34,8 @@ namespace Dev.Scripts.BlastOut.Gameplay
         [SerializeField] BlastProjectile projectilePrefab;
         [SerializeField] BlastHudView hud;
         [SerializeField] BlastVfxPlayer vfx;
+        [SerializeField] BlastAudio audioPlayer;
+        [SerializeField] BlastImpactFeedback impact;
 
         readonly BlastSession session = new BlastSession();
         readonly List<BlastProjectile> flying = new List<BlastProjectile>(8);
@@ -62,6 +64,8 @@ namespace Dev.Scripts.BlastOut.Gameplay
             /* Nghe ở resolver thay vì gọi VFX từ đạn và từ thùng: mọi vụ nổ đều đi qua đó, kể cả
                nổ dây chuyền, nên hiệu ứng khớp mọi nguồn mà không rải lời gọi khắp nơi. */
             if (vfx) resolver.Blasted += vfx.PlayExplosion;
+            if (audioPlayer) resolver.Blasted += audioPlayer.PlayExplosion;
+            if (impact) resolver.Blasted += impact.OnBlast;
 
             preview.Initialize();
             aim.Bind(view);
@@ -80,6 +84,8 @@ namespace Dev.Scripts.BlastOut.Gameplay
         public override void CleanUp()
         {
             if (vfx) resolver.Blasted -= vfx.PlayExplosion;
+            if (audioPlayer) resolver.Blasted -= audioPlayer.PlayExplosion;
+            if (impact) resolver.Blasted -= impact.OnBlast;
             aim.Fired -= OnFired;
             collectZone.BlockCollected -= OnBlockCollected;
             session.PhaseChanged -= OnPhaseChanged;
@@ -118,6 +124,13 @@ namespace Dev.Scripts.BlastOut.Gameplay
 
             builder.Build(level, resolver);
 
+            /* Khối được dựng lại mỗi level nên phải nối lại tiếng va chạm sau mỗi lần Build. */
+            if (audioPlayer)
+            {
+                var blocks = builder.Blocks;
+                for (var i = 0; i < blocks.Count; i++) blocks[i].BindImpact(audioPlayer.PlayImpact);
+            }
+
             /* Pháo có thể đứng trên một bệ đang chạy. Giữ khoảng lệch lúc dựng rồi bám theo mỗi
                frame, nhờ vậy pháo không bao giờ rời khỏi mặt bệ dù quỹ đạo là đường hay vòng. */
             levelTime = 0f;
@@ -150,6 +163,10 @@ namespace Dev.Scripts.BlastOut.Gameplay
         public override void Tick()
         {
             var deltaTime = Time.deltaTime;
+
+            /* Trước switch và không phụ thuộc phase: khựng hình đặt timeScale về 0, nên chính nó
+               phải được tick bằng thời gian thực mới tự nhả ra được — bỏ sót là game treo. */
+            if (impact) impact.ManualTick();
 
             /* Pháo bám bệ ở đây chứ không ở FixedTick: bệ bật interpolation nên vị trí hiển thị chỉ
                đúng ở nhịp render, đặt theo nhịp vật lý thì khẩu pháo giật so với bệ dưới chân. */
@@ -261,6 +278,7 @@ namespace Dev.Scripts.BlastOut.Gameplay
             var type = level.Ammo[Mathf.Min(ammoIndex, level.Ammo.Length - 1)];
             ammoIndex++;
 
+            if (audioPlayer) audioPlayer.PlayShoot();
             Spawn(aim.MuzzlePosition, velocity, type);
         }
 
@@ -288,6 +306,7 @@ namespace Dev.Scripts.BlastOut.Gameplay
 
         void OnBlockCollected(TargetBlock block)
         {
+            if (audioPlayer) audioPlayer.PlayCollect();
             session.OnTargetCollected();
         }
 
@@ -297,6 +316,12 @@ namespace Dev.Scripts.BlastOut.Gameplay
             {
                 settleElapsed = 0f;
                 settleHeld = 0f;
+            }
+
+            if (audioPlayer)
+            {
+                if (phase == BlastPhase.Won) audioPlayer.PlayWin();
+                else if (phase == BlastPhase.Lost) audioPlayer.PlayLose();
             }
 
             hud.ShowPhase(phase);

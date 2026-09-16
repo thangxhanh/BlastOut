@@ -84,7 +84,11 @@ namespace Dev.Scripts.Editor.BlastOut
             var body = AddBody(go, 1f);
             var block = go.AddComponent<TargetBlock>();
 
-            new SerializedFieldWriter(block).Ref("body", body).Ref("tuning", tuning).Apply();
+            new SerializedFieldWriter(block)
+                .Ref("body", body)
+                .Ref("tuning", tuning)
+                .Float("hardImpactSpeed", 2.5f)
+                .Apply();
             BindBase(block);
 
             return SavePrefab(go).GetComponent<TargetBlock>();

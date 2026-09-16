@@ -1,3 +1,4 @@
+using System;
 using Dacodelaac.Core;
 using Dev.Scripts.BlastOut.Config;
 using UnityEngine;
@@ -13,7 +14,25 @@ namespace Dev.Scripts.BlastOut.Gameplay
         [SerializeField] Rigidbody2D body;
         [SerializeField] BlastTuning tuning;
 
+        [Tooltip("Tốc độ va chạm tối thiểu mới coi là một cú đập đáng nghe. Thấp hơn thì khối chỉ " +
+                 "đang cọ vào bệ, phát tiếng sẽ thành lạo xạo liên tục.")]
+        [SerializeField] float hardImpactSpeed = 2.5f;
+
+        Action impacted;
+
         public Rigidbody2D Body => body;
+
+        /* Builder nối lại mỗi lần dựng level — khối bị huỷ và tạo lại nên không giữ được đăng ký cũ. */
+        public void BindImpact(Action handler)
+        {
+            impacted = handler;
+        }
+
+        void OnCollisionEnter2D(Collision2D collision)
+        {
+            if (collision.relativeVelocity.sqrMagnitude < hardImpactSpeed * hardImpactSpeed) return;
+            impacted?.Invoke();
+        }
 
         public void ApplyBlast(Vector2 origin, float force, float radius)
         {
@@ -34,7 +53,9 @@ namespace Dev.Scripts.BlastOut.Gameplay
             direction = (direction + Vector2.up * tuning.BlastUpwardBias).normalized;
 
             body.AddForce(direction * (force * falloff), ForceMode2D.Impulse);
-            body.AddTorque(Random.Range(-1f, 1f) * tuning.BlastTorque * falloff, ForceMode2D.Impulse);
+            /* Chỉ rõ UnityEngine: file có using System nên Random trần là nhập nhằng. */
+            var spin = UnityEngine.Random.Range(-1f, 1f);
+            body.AddTorque(spin * tuning.BlastTorque * falloff, ForceMode2D.Impulse);
         }
 
         public bool IsSettled(float speedThreshold)
