@@ -24,16 +24,16 @@ MonoBehaviour:
   minLaunchSpeed: 8
   maxLaunchSpeed: 20
   projectileGravityScale: 2.2
-  projectileLifetime: 6
-  blastRadius: 3
-  blastForce: 12
+  projectileLifetime: 3.5
+  blastRadius: 1.9
+  blastForce: 11
   blastUpwardBias: 0.45
-  blastTorque: 6
-  barrelRadius: 3.8
-  barrelForce: 16
+  blastTorque: 5
+  barrelRadius: 2.4
+  barrelForce: 11
   barrelChainDelay: 0.12
-  settleSpeedThreshold: 0.25
-  settleHoldTime: 0.4
-  settleTimeout: 4
+  settleSpeedThreshold: 0.3
+  settleHoldTime: 0.3
+  settleTimeout: 2.5
   trajectoryPointCount: 14
   trajectoryTimeStep: 0.07

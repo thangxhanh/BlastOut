@@ -27,6 +27,16 @@ namespace Dev.Scripts.BlastOut.Gameplay
         float aliveTime;
 
         public bool Consumed => consumed;
+        public Vector2 Position => body.position;
+
+        /* Biến mất mà KHÔNG nổ — dùng khi đạn đã bay khỏi vùng chơi. Nổ ở ngoài màn thì người chơi
+           không thấy gì, chỉ thấy game đứng im chờ, nên coi như cú bắn đã hỏng và kết thúc luôn. */
+        public void Discard()
+        {
+            if (consumed) return;
+            consumed = true;
+            Despawn();
+        }
 
         public void Launch(Vector2 velocity, AmmoType type, BlastResolver blastResolver,
             Action<BlastProjectile> onDespawned, Action<Vector2, Vector2> onSplitRequested)

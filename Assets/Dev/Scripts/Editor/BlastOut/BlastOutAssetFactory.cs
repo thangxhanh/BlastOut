@@ -117,17 +117,24 @@ namespace Dev.Scripts.Editor.BlastOut
                 .Float("minLaunchSpeed", 8f)
                 .Float("maxLaunchSpeed", 20f)
                 .Float("projectileGravityScale", 2.2f)
-                .Float("projectileLifetime", 6f)
-                .Float("blastRadius", 3f)
-                .Float("blastForce", 12f)
+                .Float("projectileLifetime", 3.5f)
+
+                /* Bán kính tính theo khổ màn: thế giới chỉ rộng 9 unit, nên bán kính 3 nghĩa là
+                   một vụ nổ phủ 2/3 màn — bắn đâu cũng trúng và cú ngắm mất hết ý nghĩa. */
+                .Float("blastRadius", 1.9f)
+                .Float("blastForce", 11f)
                 .Float("blastUpwardBias", 0.45f)
-                .Float("blastTorque", 6f)
-                .Float("barrelRadius", 3.8f)
-                .Float("barrelForce", 16f)
+                .Float("blastTorque", 5f)
+
+                /* Thùng nổ chỉ cần NẰM TRONG bán kính là phát nổ, không phụ thuộc lực còn lại bao
+                   nhiêu. Bán kính rộng vì thế biến mọi cú bắn trượt thành cú bắn trúng. */
+                .Float("barrelRadius", 2.4f)
+                .Float("barrelForce", 11f)
                 .Float("barrelChainDelay", 0.12f)
-                .Float("settleSpeedThreshold", 0.25f)
-                .Float("settleHoldTime", 0.4f)
-                .Float("settleTimeout", 4f)
+
+                .Float("settleSpeedThreshold", 0.3f)
+                .Float("settleHoldTime", 0.3f)
+                .Float("settleTimeout", 2.5f)
                 .Int("trajectoryPointCount", 14)
                 .Float("trajectoryTimeStep", 0.07f)
                 .Apply();

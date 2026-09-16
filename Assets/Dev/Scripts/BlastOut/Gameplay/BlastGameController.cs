@@ -42,6 +42,7 @@ namespace Dev.Scripts.BlastOut.Gameplay
         BlastLevelConfig level;
         Transform launcherAnchor;
         Vector2 launcherOffset;
+        Rect playArea;
         float levelTime;
         int levelIndex;
         int ammoIndex;
@@ -96,8 +97,17 @@ namespace Dev.Scripts.BlastOut.Gameplay
             flying.Clear();
             projectiles.DeactivateAll();
 
-            var bounds = view.orthographicSize * view.aspect * 2f;
+            var halfHeight = view.orthographicSize;
+            var halfWidth = halfHeight * view.aspect;
+            var bounds = halfWidth * 2f;
             collectZone.SetTopEdge(level.CollectZoneTopY, bounds);
+
+            /* Lề quanh khung nhìn: đủ để đạn vừa khuất mép vẫn còn cơ hội bay trở vào, nhưng không
+               rộng tới mức phải chờ lâu khi cú bắn đã hỏng hẳn. */
+            const float margin = 1.5f;
+            playArea = Rect.MinMaxRect(
+                -halfWidth - margin, level.CollectZoneTopY - margin,
+                halfWidth + margin, halfHeight + margin);
             launcherRoot.position = level.LauncherPosition;
 
             builder.Build(level, resolver);
@@ -186,8 +196,18 @@ namespace Dev.Scripts.BlastOut.Gameplay
                 if (projectile.Consumed) continue;
 
                 if (detonate) projectile.Detonate();
+                else if (IsOutOfPlay(projectile.Position)) projectile.Discard();
                 else projectile.ManualTick(deltaTime);
             }
+        }
+
+        /* Đạn đã ra khỏi khung nhìn và không còn đường quay lại. Không chờ hết tuổi thọ ở đây:
+           đứng nhìn màn hình trống vài giây sau một cú bắn hỏng là quãng chờ khó chịu nhất.
+
+           Phía TRÊN cố ý không tính là ngoài cuộc — đạn bắn vồng lên cao vẫn sẽ rơi xuống. */
+        bool IsOutOfPlay(Vector2 position)
+        {
+            return position.x < playArea.xMin || position.x > playArea.xMax || position.y < playArea.yMin;
         }
 
         /* Chờ mọi thứ đứng yên rồi mới kết luận: một khối còn đang lăn vẫn có thể rơi vào vùng thu. */
