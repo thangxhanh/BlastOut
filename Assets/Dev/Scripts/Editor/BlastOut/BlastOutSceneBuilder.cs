@@ -114,6 +114,11 @@ namespace Dev.Scripts.Editor.BlastOut
             camera.orthographicSize = 8f;
             camera.clearFlags = CameraClearFlags.SolidColor;
             camera.backgroundColor = BlastOutAssetFactory.SkyColor;
+
+            /* Scene dựng từ EmptyScene nên không có sẵn AudioListener như scene mặc định của Unity.
+               Thiếu nó thì mọi AudioSource vẫn chạy nhưng không phát ra tiếng nào. */
+            go.AddComponent<AudioListener>();
+
             return camera;
         }
 
