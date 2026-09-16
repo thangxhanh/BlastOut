@@ -1,0 +1,18 @@
+{
+    "name": "Dacodelaac.Runtime",
+    "rootNamespace": "Dacodelaac",
+    "references": [
+        "Unity.TextMeshPro",
+        "LeanTouch",
+        "LeanCommon"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

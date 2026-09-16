@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 4d96eca8caa24c099bdbd88f46b1770e
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences:
+  - pools: {fileID: 11400000, guid: 866f23a3800914ad285dc839fa4da6d2, type: 2}
+  - ticker: {fileID: 11400000, guid: b1259f9e47f5d476cbfd3237af191b98, type: 2}
+  - loadingScreenEvent: {fileID: 11400000, guid: c6dd888950ac248d1a4e2e366ea19ab4, type: 2}
+  executionOrder: -2
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

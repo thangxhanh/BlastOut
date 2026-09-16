@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5890bd570df4e264f9901cb506d4a5e0, type: 3}
+  m_Name: sound_manager
+  m_EditorClassIdentifier: 
+  id: sound_manager
+  pools: {fileID: 11400000, guid: 866f23a3800914ad285dc839fa4da6d2, type: 2}
+  ticker: {fileID: 11400000, guid: b1259f9e47f5d476cbfd3237af191b98, type: 2}
+  earlyTick: 0
+  tick: 0
+  lateTick: 0
+  fixedTick: 0
+  collectMoney:
+    audio: {fileID: 0}
+    volume: 1
+  gameplayMusic:
+    audio: {fileID: 0}
+    volume: 1
+  playAudioEvent: {fileID: 0}
+  mixer: {fileID: 24100000, guid: 0faa1870e226bad47bd977f33ee62233, type: 2}

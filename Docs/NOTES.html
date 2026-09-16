@@ -1,0 +1,526 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ghi chú — kiến thức cần nhớ (Unity)</title>
+<style>
+  :root{
+    --bg:#fbfaf8; --fg:#1c1b19; --muted:#6b6862; --line:#e2ded7;
+    --accent:#9a5b2c; --code-bg:#f0ece5; --th-bg:#f3efe8; --zebra:#f8f6f2;
+    --callout-bg:#f5f1ea;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#1a1917; --fg:#e8e5df; --muted:#a09a90; --line:#35322d;
+      --accent:#d99a5f; --code-bg:#26241f; --th-bg:#26241f; --zebra:#201e1b;
+      --callout-bg:#232019;
+    }
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; background:var(--bg); color:var(--fg);
+    font:16px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:860px; margin:0 auto; padding:48px 24px 96px}
+  h1{font-size:30px; line-height:1.25; margin:0 0 4px; letter-spacing:-.01em}
+  h2{font-size:23px; margin:52px 0 14px; padding-bottom:8px; border-bottom:2px solid var(--line); letter-spacing:-.01em}
+  h3{font-size:18px; margin:34px 0 10px; color:var(--accent)}
+  p{margin:12px 0}
+  ul,ol{margin:12px 0; padding-left:22px}
+  li{margin:7px 0}
+  strong{font-weight:650}
+  code{
+    font:13.5px/1.5 ui-monospace,SFMono-Regular,Consolas,"Liberation Mono",monospace;
+    background:var(--code-bg); padding:1.5px 5px; border-radius:4px;
+  }
+  .sub{color:var(--muted); font-size:14px; margin:0 0 26px}
+  blockquote{
+    margin:20px 0; padding:14px 18px; background:var(--callout-bg);
+    border-left:3px solid var(--accent); border-radius:0 6px 6px 0;
+    color:var(--muted); font-size:14.5px;
+  }
+  blockquote p{margin:6px 0}
+  blockquote strong{color:var(--fg)}
+  .scroll{overflow-x:auto; margin:18px 0}
+  table{border-collapse:collapse; width:100%; font-size:14.5px}
+  th,td{border:1px solid var(--line); padding:9px 12px; text-align:left; vertical-align:top}
+  th{background:var(--th-bg); font-weight:650}
+  tbody tr:nth-child(even){background:var(--zebra)}
+  hr{border:0; border-top:1px solid var(--line); margin:44px 0}
+  .foot{color:var(--muted); font-size:14px; font-style:italic}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>Ghi chú — kiến thức cần nhớ</h1>
+<p class="sub">Unity · bản đọc của <code>Docs/NOTES.md</code></p>
+
+<blockquote>
+  <p>Nơi ghi những thứ <strong>hay quên và hay làm sai</strong>, phần lớn là asset/settings — tức là phần AI không tự làm được, phải nhớ để làm tay.</p>
+  <p>Quan hệ với hai file kia: <strong>CLAUDE.md</strong> là <strong>luật bắt buộc</strong> (ngắn gọn, không giải thích), <strong>AI_WORKFLOW.md</strong> là <strong>quy trình làm việc</strong>, file này là <strong>chi tiết + vì sao</strong>.</p>
+</blockquote>
+
+<h2>1. Texture</h2>
+
+<p>Texture là khoản RAM lớn nhất của một game 2D mobile. Sai settings không làm crash ngay — nó làm máy yếu bị hệ điều hành kill sau 15–20 phút chơi, và <strong>không lộ ra trong Editor</strong> vì máy dev thừa RAM.</p>
+
+<h3>1.1 Mipmap</h3>
+<p><strong>Là gì:</strong> chuỗi bản thu nhỏ liên tiếp (1/2, 1/4, 1/8...) sinh sẵn lúc import. Khi vẽ, GPU tự chọn mức gần nhất với kích thước thật trên màn hình.</p>
+<div class="scroll">
+<table>
+  <thead><tr><th></th><th>Bật</th><th>Tắt</th></tr></thead>
+  <tbody>
+    <tr><th>Dùng cho</th><td>Texture 3D ở xa, hoặc đổi khoảng cách liên tục so với camera</td><td>UI, sprite 2D, vật thể luôn ở khoảng cách cố định</td></tr>
+    <tr><th>Được</th><td>Khử răng cưa/moiré, hết nhấp nháy khi vật đi xa. GPU đọc texture nhỏ hơn → cache hit tốt hơn, thường <strong>nhanh hơn</strong> dù tốn RAM</td><td>Tiết kiệm <strong>33%</strong> bộ nhớ của texture đó</td></tr>
+    <tr><th>Mất</th><td>+33% bộ nhớ (tổng mọi mức mip = 1/3 ảnh gốc)</td><td>Ảnh bị thu nhỏ nhiều sẽ rỗ và nhấp nháy khi chuyển động</td></tr>
+  </tbody>
+</table>
+</div>
+<p><strong>Bẫy hay dính:</strong> import type <code>Sprite (2D and UI)</code> mặc định <strong>tắt</strong> mipmap, nhưng type <code>Default</code> mặc định <strong>bật</strong>. Ảnh UI lỡ để <code>Default</code> là âm thầm tốn thêm 33% mà không ai thấy — kiểm bằng dòng info ở mục 1.6.</p>
+
+<h3>1.2 Nén</h3>
+<div class="scroll">
+<table>
+  <thead><tr><th>Format</th><th>bit/pixel</th><th>Dùng khi</th></tr></thead>
+  <tbody>
+    <tr><td><strong>ASTC 4x4</strong></td><td>8</td><td>Ảnh cần nét: chữ, icon nhỏ, ảnh hiện to trên màn hình</td></tr>
+    <tr><td><strong>ASTC 6x6</strong></td><td>3.56</td><td><strong>Mặc định cho phần lớn sprite</strong></td></tr>
+    <tr><td><strong>ASTC 8x8</strong></td><td>2</td><td>Nền, ảnh ít chi tiết, ảnh vốn đã mờ</td></tr>
+    <tr><td><strong>ETC2 RGBA</strong></td><td>8</td><td>Fallback cho Android cũ không hỗ trợ ASTC</td></tr>
+    <tr><td><strong>RGBA32</strong></td><td>32</td><td>Không nén. Chỉ khi gradient bị band nặng — tốn gấp <strong>4 lần</strong> ASTC 4x4</td></tr>
+  </tbody>
+</table>
+</div>
+<ul>
+  <li><strong>ASTC là lựa chọn mặc định cho mobile</strong> (Android hiện đại + toàn bộ iOS). Block càng lớn càng nhẹ càng mờ — chọn theo mức chi tiết của ảnh, không chọn một số cho cả game.</li>
+  <li><strong>Crunch compression</strong> chỉ giảm dung lượng <strong>file cài đặt</strong>, giải nén về ETC/DXT lúc load nên <strong>RAM lúc chạy không đổi</strong>. Nó cũng <strong>không dùng được với ASTC</strong>. Import rất lâu. Chỉ bật khi đang phải cắt size APK.</li>
+</ul>
+
+<h3>1.3 Max Size</h3>
+<p>Đây là kích thước ảnh được nạp lên, <strong>không phải</strong> kích thước nó hiện trên màn hình. Ảnh 2048 mà chỉ hiện ở 200px là phí khoảng <strong>100 lần</strong> diện tích pixel.</p>
+<p>Quy tắc: đặt Max Size sát với kích thước lớn nhất ảnh thật sự hiển thị trên thiết bị mục tiêu. Background full-screen thì theo cạnh dài màn hình, và để <strong>ngoài</strong> atlas (CLAUDE.md §9.4).</p>
+<p><strong>Bẫy kích thước:</strong> ASTC cần cạnh chia hết cho block size, ETC2 cần chia hết cho 4. Không thoả thì Unity có thể lặng lẽ rơi về định dạng không nén — <strong>RAM tăng 4–8 lần mà không có warning nào</strong>. Luôn xác nhận bằng dòng info (mục 1.6), đừng tin vào ô mình vừa chọn.</p>
+
+<h3>1.4 Read/Write Enabled — gấp đôi RAM</h3>
+<p>Bật = Unity giữ thêm một bản sao trên RAM CPU bên cạnh bản trên GPU. Chỉ bật khi code thật sự gọi <code>GetPixels</code> / <code>SetPixels</code> / <code>ReadPixels</code> / <code>EncodeToPNG</code>. Mặc định tắt — đừng bật cho chắc.</p>
+
+<h3>1.5 Vài ô khác</h3>
+<ul>
+  <li><strong>Alpha Is Transparency</strong> — bật cho ảnh có viền mềm/bóng đổ. Unity nhân màu lan ra vùng trong suốt, tránh viền đen khi scale.</li>
+  <li><strong>Generate Physics Shape</strong> — tắt nếu sprite không dùng collider 2D. Bật là sinh + lưu polygon thừa cho mọi sprite.</li>
+  <li><strong>Non-Power of 2</strong> — với Sprite để <code>None</code>. Để Unity tự scale lên POT là nó đổi cả pixel ảnh.</li>
+  <li><strong>Filter Mode</strong> — <code>Bilinear</code> mặc định; <code>Point</code> chỉ cho pixel art. <code>Aniso Level</code> = 1 cho 2D/UI (chỉ có tác dụng khi có mipmap).</li>
+</ul>
+
+<h3>1.6 Kiểm tra thật — làm trước mỗi lần build</h3>
+<ol>
+  <li><strong>Dòng info cuối Inspector của texture</strong> — ghi format thật sau khi nén + dung lượng RAM thật. Đây là <strong>nguồn sự thật duy nhất</strong>: các ô phía trên chỉ là <em>yêu cầu</em>, Unity có quyền không đáp ứng và tự đổi mà không báo.</li>
+  <li><strong>Window → Sprite Atlas Tool → tab Soát lỗi</strong> — sprite chưa gom, trùng atlas, quá lớn.</li>
+  <li><strong>Memory Profiler</strong> — snapshot rồi sort theo <code>Texture2D</code>. Xem CLAUDE.md §9.6.</li>
+  <li>Sprite đã nằm trong atlas thì <strong>setting nén lấy theo atlas</strong>, không phải theo sprite gốc. Chỉnh ở asset atlas, sửa ở sprite là vô nghĩa.</li>
+</ol>
+
+<h3>1.7 Bảng chốt theo loại ảnh</h3>
+<div class="scroll">
+<table>
+  <thead><tr><th>Loại ảnh</th><th>Mipmap</th><th>Nén</th><th>Max Size</th><th>Read/Write</th></tr></thead>
+  <tbody>
+    <tr><td>Icon / button UI</td><td>Tắt</td><td>ASTC 4x4–6x6</td><td>Vừa đủ hiển thị</td><td>Tắt</td></tr>
+    <tr><td>Background full-screen</td><td>Tắt</td><td>ASTC 8x8, <strong>ngoài atlas</strong></td><td>Theo cạnh dài màn hình</td><td>Tắt</td></tr>
+    <tr><td>Sprite gameplay 2D</td><td>Tắt</td><td>ASTC 6x6</td><td>Vừa đủ hiển thị</td><td>Tắt</td></tr>
+    <tr><td>Texture 3D (model ở xa)</td><td><strong>Bật</strong></td><td>ASTC 6x6</td><td>512–1024</td><td>Tắt</td></tr>
+    <tr><td>Ảnh cần đọc pixel bằng code</td><td>Tắt</td><td>Không nén</td><td>Nhỏ nhất có thể</td><td><strong>Bật</strong></td></tr>
+  </tbody>
+</table>
+</div>
+
+<h3>1.8 Định dạng ảnh nguồn</h3>
+<p>Mục 1.2 nói về định dạng <strong>đầu ra</strong> Unity nén sang. Mục này nói về <strong>file gốc</strong> bạn kéo vào project — hai thứ khác nhau.</p>
+<p><strong>Điều quan trọng nhất: Unity nén lại mọi ảnh khi import.</strong> File nguồn không nằm trong bản build và không quyết định RAM lúc chạy. Nó chỉ quyết định <em>chất lượng đầu vào</em> của lần nén đó, và dung lượng repo.</p>
+<div class="scroll">
+<table>
+  <thead><tr><th>Định dạng</th><th>Alpha</th><th>Mất chất lượng</th><th>Dùng khi</th></tr></thead>
+  <tbody>
+    <tr><td><strong>PNG</strong></td><td>Có</td><td>Không</td><td><strong>Mặc định cho gần như mọi thứ</strong></td></tr>
+    <tr><td><strong>PSD</strong></td><td>Có</td><td>Không</td><td>Muốn giữ layer để sửa; Unity tự làm phẳng khi import</td></tr>
+    <tr><td><strong>TGA / TIFF</strong></td><td>Có</td><td>Không</td><td>Pipeline 3D quen dùng; nặng hơn PNG, không hơn gì về chất lượng</td></tr>
+    <tr><td><strong>EXR / HDR</strong></td><td>Có</td><td>Không</td><td>Dữ liệu HDR: skybox, lightmap, HDRI</td></tr>
+    <tr><td><strong>JPG</strong></td><td><strong>Không</strong></td><td><strong>Có</strong></td><td>Đừng dùng — xem bên dưới</td></tr>
+  </tbody>
+</table>
+</div>
+<p><strong>Vì sao không JPG.</strong> Nó không có alpha, và nó nén mất dữ liệu <strong>trước khi</strong> Unity kịp làm gì. Nhiễu quanh cạnh sắc do JPG sinh ra chính là loại tín hiệu mà ASTC xử lý tệ nhất — nén chồng lên nhiễu thì hỏng thêm một lần nữa, mà <strong>không hề nhẹ đi</strong>: dung lượng đầu ra do block size quyết định, nguồn nặng nhẹ không đổi được con số đó.</p>
+<p><strong>Bẫy hay gặp:</strong> chạy PNG qua TinyPNG/công cụ nén ảnh để mong nhẹ APK. Vô ích — Unity nén lại hết, build không nhỏ đi một byte. Tệ hơn: mấy công cụ đó giảm về bảng màu 8-bit, tức là <em>làm hỏng nguồn</em> để đổi lấy một thứ không tồn tại. Chỉ dùng khi muốn repo nhẹ, và biết rõ mình đang đánh đổi.</p>
+<p><strong>Độ sâu màu:</strong> 8-bit/kênh là đủ cho mọi ảnh thường. Chỉ heightmap, normal map và dữ liệu HDR mới cần 16-bit hoặc float — ảnh thường để 16-bit thì Unity cũng hạ xuống, chỉ tốn thêm thời gian import.</p>
+<p><strong>Kích thước nguồn:</strong> giữ ảnh gốc lớn hơn hoặc bằng mức sẽ hiển thị, rồi khống chế bằng Max Size (mục 1.3). Hạ kích thước ngay ở file nguồn là mất luôn đường lùi khi sau này cần bản nét hơn.</p>
+
+<hr>
+<h2>2. Âm thanh</h2>
+
+<h3>2.1 Định dạng nguồn</h3>
+<p>Y hệt nguyên tắc ở mục 1.8: <strong>Unity mã hoá lại mọi file âm thanh khi import</strong>, nên file nguồn không nằm trong build. Chỉ dùng định dạng <strong>không mất dữ liệu</strong>:</p>
+<ul>
+  <li><strong>WAV</strong> (PCM 16-bit) — mặc định, dùng cho mọi thứ.</li>
+  <li><strong>AIFF</strong> — tương đương WAV, quen thuộc bên macOS.</li>
+  <li><strong>Đừng đưa MP3 / OGG vào làm nguồn.</strong> Chúng đã vứt dữ liệu rồi; Unity nén tiếp là mất lần hai, mà dung lượng đầu ra không nhỏ hơn chút nào.</li>
+</ul>
+
+<h3>2.2 Load Type — chỗ hay hỏng nhất</h3>
+<div class="scroll">
+<table>
+  <thead><tr><th>Load Type</th><th>RAM</th><th>Dùng cho</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Decompress On Load</strong></td><td>Cao — giải nén thành PCM nằm trong RAM</td><td>SFX <strong>ngắn</strong>, phát liên tục</td></tr>
+    <tr><td><strong>Compressed In Memory</strong></td><td>Thấp — giữ nén, giải mã lúc phát</td><td>SFX dài hơn, giọng nói</td></tr>
+    <tr><td><strong>Streaming</strong></td><td>Gần như không — đọc dần từ đĩa</td><td>Nhạc nền, ambience dài</td></tr>
+  </tbody>
+</table>
+</div>
+<p><strong>Lỗi kinh điển: để nhạc nền ở <code>Decompress On Load</code>.</strong> Một bài 3 phút, stereo, 44.1 kHz khi giải nén là:</p>
+<pre><code>44100 × 2 byte × 2 kênh × 180 giây ≈ 32 MB RAM</code></pre>
+<p>Cho <strong>một</strong> bài hát. Đổi sang <code>Streaming</code> là gần như bằng 0.</p>
+<p>Ngược lại, <strong>đừng Streaming cho SFX ngắn</strong>: mỗi clip streaming giữ một handle file và buffer riêng, nhiều clip nhỏ cùng stream còn tốn hơn là nạp thẳng. Streaming dành cho 1–2 clip dài phát đồng thời.</p>
+
+<h3>2.3 Compression Format</h3>
+<div class="scroll">
+<table>
+  <thead><tr><th>Format</th><th>Tỉ lệ</th><th>Chi phí CPU lúc phát</th><th>Dùng cho</th></tr></thead>
+  <tbody>
+    <tr><td><strong>PCM</strong></td><td>1:1</td><td>Không</td><td>Clip cực ngắn, cần chính xác tuyệt đối</td></tr>
+    <tr><td><strong>ADPCM</strong></td><td>~3.5:1</td><td>Rất rẻ</td><td><strong>SFX ngắn</strong> — click, pop, va chạm, bước chân</td></tr>
+    <tr><td><strong>Vorbis</strong></td><td>Cao, có thanh Quality</td><td>Đáng kể mỗi voice đang phát</td><td><strong>Nhạc nền</strong>, clip dài, giọng nói</td></tr>
+  </tbody>
+</table>
+</div>
+<p>Điểm dễ bỏ qua: <strong>Vorbis tốn CPU cho từng voice đang phát</strong>. Mười SFX Vorbis nổ cùng lúc là một cú giật khung hình. ADPCM giải mã rẻ hơn hẳn — đó là lý do nó hợp với SFX bắn ra dồn dập, dù file to hơn.</p>
+<p>Thanh <strong>Quality</strong> chỉ có tác dụng với Vorbis. Mặc định 100 là thừa; nhạc nền để khoảng <strong>70</strong> thường không ai nghe ra khác biệt trên loa điện thoại.</p>
+
+<h3>2.4 Hai nút giảm một nửa gần như miễn phí</h3>
+<ul>
+  <li><strong>Force To Mono</strong> — cắt đôi cả dung lượng lẫn RAM. Loa điện thoại gần như không tái tạo được stereo, và phần lớn SFX vốn không có thông tin không gian. Bật cho <strong>mọi SFX</strong>; nhạc nền thì cân nhắc.</li>
+  <li><strong>Sample Rate Setting → Override 22050 Hz</strong> — cắt đôi lần nữa. Tai người khó phân biệt ở SFX ngắn phát qua loa nhỏ. Giữ 44100 cho nhạc.</li>
+</ul>
+<p>Hai nút này cộng lại thường tiết kiệm nhiều hơn mọi lựa chọn compression format.</p>
+
+<h3>2.5 Bảng chốt theo loại âm</h3>
+<div class="scroll">
+<table>
+  <thead><tr><th>Loại</th><th>Load Type</th><th>Format</th><th>Mono</th><th>Sample Rate</th></tr></thead>
+  <tbody>
+    <tr><td>SFX ngắn (click, pop, coin)</td><td>Decompress On Load</td><td>ADPCM</td><td><strong>Có</strong></td><td>22050</td></tr>
+    <tr><td>SFX dài / giọng nói</td><td>Compressed In Memory</td><td>Vorbis (~70)</td><td><strong>Có</strong></td><td>44100</td></tr>
+    <tr><td>Nhạc nền</td><td><strong>Streaming</strong></td><td>Vorbis (~70)</td><td>Tuỳ</td><td>44100</td></tr>
+    <tr><td>Ambience loop dài</td><td><strong>Streaming</strong></td><td>Vorbis</td><td>Có</td><td>22050</td></tr>
+  </tbody>
+</table>
+</div>
+<p>Thêm hai ô nữa cho clip dài: tắt <strong>Preload Audio Data</strong> và bật <strong>Load In Background</strong> để nhạc không chặn lúc vào scene.</p>
+
+<h3>2.6 Số voice — trần cứng của cả game</h3>
+<p><code>Project Settings → Audio</code>:</p>
+<pre><code>m_RealVoiceCount: 32       ← số âm phát THẬT cùng lúc
+m_VirtualVoiceCount: 512   ← số âm được theo dõi, phần vượt bị ảo hoá</code></pre>
+<p>Vượt 32 thì Unity tự tắt tiếng những voice <strong>ưu tiên thấp</strong> — dùng <code>AudioSource.priority</code> để quyết định cái nào bị hy sinh, đừng để nó chọn ngẫu nhiên. Mỗi con quái trên map giữ một loop là ăn một suất trong 32 chỗ đó.</p>
+
+<h3>2.7 Đặt mặc định lúc import</h3>
+<p>Không có ô nào trong Project Settings đặt sẵn Load Type hay Compression. Hai cách giống hệt phần texture (mục 1.8):</p>
+<ul>
+  <li><strong>Preset Manager</strong> — đóng dấu toàn bộ AudioImporter.</li>
+  <li><strong><code>OnPreprocessAudio</code></strong> trong <code>AssetPostprocessor</code> — chạm đúng field cần, rẽ theo đường dẫn (<code>/Music/</code> thì Streaming, <code>/SFX/</code> thì ADPCM + mono).</li>
+</ul>
+<p>Cùng file với <code>TextureImportDefaults</code> cũng được.</p>
+
+<hr>
+<h2>3. Batching &amp; draw call</h2>
+
+<h3>3.1 Đang tối ưu cái gì</h3>
+<p>Mỗi <strong>draw call</strong> là một lần CPU bảo GPU "vẽ cái này với trạng thái này". Trên mobile, CPU thường là chỗ nghẽn trước GPU, nên số draw call quan trọng hơn số tam giác.</p>
+<p>Trong Stats window, con số đáng nhìn là <strong>SetPass calls</strong> chứ không phải Batches: SetPass là lần đổi shader/material — phần đắt thật. Hai batch cùng material rẻ hơn nhiều so với hai batch khác material.</p>
+<p>Bốn cơ chế gộp dưới đây <strong>không thay thế nhau</strong> — mỗi cái phục vụ một loại nội dung, và hay bị nhầm lẫn.</p>
+
+<h3>3.2 Static batching</h3>
+<p>Gộp mesh của các object <strong>đứng yên</strong> thành một vertex buffer chung <strong>lúc build</strong>.</p>
+<ul>
+  <li>Bật ở <code>Player Settings → Rendering → Static Batching</code>. Từng object phải tick cờ <strong>Batching Static</strong>.</li>
+  <li><strong>Không được di chuyển/xoay/scale lúc chạy</strong> — transform bị nướng cứng vào mesh gộp.</li>
+  <li>Muốn giảm draw call thì phải <strong>chung material</strong>.</li>
+</ul>
+<p><strong>Cái giá: nhân bản dữ liệu đỉnh.</strong> 100 cây cùng một mesh 1.000 đỉnh:</p>
+<div class="scroll">
+<table>
+  <thead><tr><th></th><th>Bộ nhớ</th></tr></thead>
+  <tbody>
+    <tr><td>Không static batching</td><td>1 mesh + 100 transform ≈ <strong>40 KB</strong></td></tr>
+    <tr><td>Có static batching</td><td>mesh gộp 100.000 đỉnh ≈ <strong>4 MB</strong></td></tr>
+  </tbody>
+</table>
+</div>
+<p>Gấp ~100 lần, nằm trong cả build lẫn RAM. <strong>Static batching đổi RAM lấy draw call</strong> — lời với vài chục object <em>khác nhau</em>, lỗ nặng với hàng trăm <em>bản sao</em>.</p>
+
+<h3>3.3 GPU Instancing</h3>
+<p>Đúng thứ cần cho <strong>nhiều bản sao giống hệt</strong>: một mesh, một material, vẽ N lần trong một draw call, dữ liệu per-instance đẩy riêng.</p>
+<ul>
+  <li>Bật bằng ô <strong>Enable GPU Instancing</strong> trên <strong>material</strong>.</li>
+  <li><strong>Không nhân bản đỉnh</strong> — khác hẳn static batching, đây là lý do chính để chọn nó.</li>
+  <li><strong>Chạy được với object di chuyển</strong>, không cần cờ Static.</li>
+  <li>Không dùng được với <code>SkinnedMeshRenderer</code>.</li>
+</ul>
+<p><strong>Lưu ý về MaterialPropertyBlock:</strong> MPB chỉ đi cùng instancing khi shader có khai báo thuộc tính instanced (<code>UNITY_INSTANCING_BUFFER_START/END</code>). Shader thường mà gán MPB khác nhau thì mỗi object một draw call.</p>
+<p>Đây là chỗ §9.4 của CLAUDE.md va vào batching: object cần màu riêng thì chấp nhận draw call riêng, object chỉ đứng làm nền thì để chung material. Không có cả hai.</p>
+
+<h3>3.4 Dynamic batching — để tắt</h3>
+<p>Gộp mesh nhỏ <strong>mỗi frame bằng CPU</strong>. Chỉ nhận mesh rất nhỏ, và chi phí CPU thường lớn hơn phần tiết kiệm được trên phần cứng hiện đại. Chính Unity khuyến nghị tắt. Project này đang <code>m_DynamicBatching: 0</code> ở mọi platform — giữ nguyên.</p>
+
+<h3>3.5 Canvas batching — phần quan trọng nhất với game 2D/UI</h3>
+<p>UI <strong>không</strong> dùng ba cơ chế trên. Unity gộp các phần tử trong <strong>cùng một Canvas</strong> theo material/texture, <strong>theo thứ tự vẽ</strong>.</p>
+<p><strong>Luật cốt lõi: đổi bất cứ thứ gì bên trong một Canvas thì Canvas đó dựng lại toàn bộ mesh.</strong> Đây là lỗi hiệu năng UI phổ biến nhất — một ô đếm điểm nhảy số mỗi frame kéo theo cả HUD dựng lại mỗi frame.</p>
+<p><strong>Cách chữa: tách Canvas.</strong> UI tĩnh một Canvas, phần thay đổi liên tục (điểm, thời gian, thanh máu) một Canvas riêng. Canvas con lồng trong Canvas cha có tác dụng cô lập — dựng lại chỉ nằm trong phạm vi Canvas con.</p>
+<p><strong>Thứ tự vẽ cắt batch.</strong> Text(atlas A) → Image(atlas B) → Text(atlas A) là <strong>3 batch</strong>, dù chỉ có 2 texture. Xếp các phần tử cùng atlas liền nhau về mặt thứ tự vẽ thì gộp được. Đây là lý do thật của việc gom atlas theo nhóm cùng xuất hiện (§9.4).</p>
+<p><strong>Ẩn UI: tắt component <code>Canvas</code>, đừng <code>SetActive(false)</code> cả GameObject.</strong> Tắt GameObject là huỷ mesh, bật lại phải dựng từ đầu. Tắt riêng component <code>Canvas</code> thì ngừng vẽ mà mesh còn nguyên, bật lại gần như không tốn gì.</p>
+<blockquote>
+<p>Trong project này <code>BasePopup</code> đang dùng <code>gameObject.SetActive(false)</code> (BasePopup.cs:67). Với popup mở thỉnh thoảng thì không sao. Nhưng popup nào bật/tắt liên tục thì nên đổi sang tắt <code>Canvas</code>.</p>
+</blockquote>
+<p><strong><code>raycastTarget</code></strong> — tắt trên mọi Image/Text không cần bấm. Không liên quan batching nhưng mỗi lần chạm là một vòng duyệt qua chúng.</p>
+
+<h3>3.6 Sprite batching (2D)</h3>
+<p><code>SpriteRenderer</code> gộp theo <strong>texture + material + sorting layer/order</strong>. Sprite cùng một atlas gộp được; khác atlas thì cắt. Và giống UI, <strong>xen kẽ sorting order làm vỡ batch</strong>: A(atlas1) → B(atlas2) → C(atlas1) là 3 batch.</p>
+
+<h3>3.7 Chọn cái nào</h3>
+<div class="scroll">
+<table>
+  <thead><tr><th>Nội dung</th><th>Dùng</th></tr></thead>
+  <tbody>
+    <tr><td>Địa hình, nhà cửa, vật trang trí đứng yên</td><td>Static batching</td></tr>
+    <tr><td>Nhiều bản sao giống hệt (cây, đá, đạn, quái)</td><td><strong>GPU Instancing</strong></td></tr>
+    <tr><td>Mesh nhỏ di chuyển</td><td>Không có gì — giảm số object thì hơn</td></tr>
+    <tr><td>UI</td><td>Tách Canvas + gom atlas</td></tr>
+    <tr><td>Sprite 2D</td><td>Sprite Atlas + không xen kẽ sorting order</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h3>3.8 Đo</h3>
+<ul>
+  <li><strong>Stats window</strong> — <code>Batches</code>, <code>SetPass calls</code>, <code>Saved by batching</code>.</li>
+  <li><strong>Frame Debugger</strong> — nói rõ từng draw call gộp được không, và <strong>vì sao không</strong>.</li>
+</ul>
+<p>Như §9.6 của CLAUDE.md: đo trước và sau. Tick Static hay bật Instancing xong mà không đo thì không biết mình vừa giúp hay vừa làm hại.</p>
+
+<hr>
+<h2>4. Đo hiệu năng</h2>
+
+<h3>4.1 Ba công cụ, ba câu hỏi khác nhau</h3>
+<div class="scroll">
+<table>
+  <thead><tr><th>Công cụ</th><th>Trả lời câu hỏi</th><th>Trạng thái</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Profiler</strong></td><td><em>Frame này chậm ở đâu?</em></td><td>Có sẵn — <code>Window → Analysis → Profiler</code></td></tr>
+    <tr><td><strong>Frame Debugger</strong></td><td><em>Vì sao không gộp được draw call?</em></td><td>Có sẵn — <code>Window → Analysis → Frame Debugger</code></td></tr>
+    <tr><td><strong>Memory Profiler</strong></td><td><em>Cái gì đang chiếm RAM, và có rò không?</em></td><td><strong>Package riêng</strong> — <code>com.unity.memoryprofiler</code></td></tr>
+  </tbody>
+</table>
+</div>
+<p>Hay bị nhầm nhất: module Memory <strong>trong</strong> Profiler chỉ cho <strong>tổng số</strong>; muốn biết <em>object nào</em> thì phải cài Memory Profiler. §9.6 của CLAUDE.md nói tới cái thứ hai.</p>
+
+<h3>4.2 Luật chung: đo trên máy thật</h3>
+<p>Số trong Editor gần như vô nghĩa — Editor có overhead riêng, chạy Mono chứ không phải IL2CPP, GPU khác, và không có chuyện nóng máy tụt xung.</p>
+<ol>
+  <li><code>Build Settings</code> → tick <strong>Development Build</strong> + <strong>Autoconnect Profiler</strong>.</li>
+  <li>Mở Profiler, chọn thiết bị ở dropdown trên cùng (mặc định là <code>Editor</code>).</li>
+  <li>Android không thấy máy thì mở cổng bằng tay: <code>adb forward tcp:34999 localabstract:Unity-&lt;bundle-id&gt;</code></li>
+</ol>
+<p>Chọn máy <strong>tầm trung</strong>, không phải máy mạnh nhất bạn có.</p>
+<p><strong>Deep Profile</strong> ghi lại mọi lời gọi hàm — chậm tới mức làm sai lệch chính con số đang đo. Dùng để tìm <em>hàm nào</em>, đừng bao giờ đọc số tuyệt đối từ nó.</p>
+
+<h3>4.3 Profiler — module CPU</h3>
+<p>Click một frame trên biểu đồ → khung dưới có hai chế độ: <strong>Timeline</strong> (nhìn theo luồng, thấy cái gì chặn cái gì) và <strong>Hierarchy</strong> (bảng sắp xếp được — dùng cái này để truy).</p>
+<p>Hai cột đáng nhìn:</p>
+<ul>
+  <li><strong>Self ms</strong> — thời gian của chính hàm đó, không tính hàm con. Chi phí thật nằm ở đây, không phải Total.</li>
+  <li><strong>GC Alloc</strong> — <strong>con số quan trọng nhất trên mobile</strong>.</li>
+</ul>
+<p><strong>Thanh VSync to KHÔNG phải vấn đề.</strong> Nó nghĩa là bạn làm xong sớm và đang chờ — dấu hiệu tốt, nhưng rất hay bị hiểu ngược.</p>
+<p><strong>Mục tiêu GC Alloc trong gameplay ổn định là 0 B/frame.</strong> Mỗi byte cấp phát rồi cũng dẫn tới một lần thu gom, và thu gom là một cú khựng hình. Đây chính là lý do §9.4 cấm LINQ / nối chuỗi / <code>new</code> / <code>GetComponent</code> trong <code>Tick()</code> — Profiler là chỗ duy nhất chứng minh luật đó có được tuân thủ hay không.</p>
+<p><strong>Nhận dạng thủ phạm qua tên hàm:</strong></p>
+<div class="scroll">
+<table>
+  <thead><tr><th>Thấy trong Hierarchy</th><th>Nguyên nhân</th></tr></thead>
+  <tbody>
+    <tr><td><code>GC.Collect</code> + frame giật đều đặn</td><td>Cấp phát trong vòng lặp</td></tr>
+    <tr><td><code>Canvas.SendWillRenderCanvases</code></td><td><strong>UI dựng lại</strong> — xem §3.5, tách Canvas</td></tr>
+    <tr><td><code>Camera.Render</code> cao</td><td>Draw call / overdraw → sang Frame Debugger</td></tr>
+    <tr><td><code>Physics.Processing</code></td><td>Quá nhiều collider</td></tr>
+    <tr><td><code>Animator.Update</code></td><td>Quá nhiều Animator cùng chạy</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h3>4.4 Profiler — module Rendering</h3>
+<p><code>SetPass calls</code>, <code>Draw calls</code>, <code>Batches</code>, <code>Triangles</code> — đúng bộ số ở §3.8. Nhưng ở đây chỉ biết <strong>bao nhiêu</strong>, không biết <strong>vì sao</strong>.</p>
+
+<h3>4.5 Frame Debugger — trả lời "vì sao không gộp"</h3>
+<p>Bấm <strong>Enable</strong>, nó đóng băng một frame và cho bạn bước qua <strong>từng draw call theo đúng thứ tự vẽ</strong>. Chọn một bước thì Game view hiện đúng trạng thái vẽ tới bước đó — thấy được thứ tự dựng hình.</p>
+<p><strong>Tính năng đáng giá nhất nằm ở khung phải: dòng giải thích vì sao draw call này không gộp được với cái trước.</strong> Ví dụ hay gặp:</p>
+<ul>
+  <li><em>Objects have different materials</em> — khác material.</li>
+  <li><em>Objects have different Renderer.sortingOrder</em> — xen kẽ thứ tự vẽ (§3.6).</li>
+  <li><em>Non-instanced properties set for instanced shader</em> — gán MPB lên shader instancing (§3.3).</li>
+</ul>
+<p>Đây là công cụ duy nhất nói thẳng lý do. Đoán mò chỗ này rất tốn thời gian.</p>
+<p>Frame Debugger cũng nối được vào máy thật qua cùng dropdown với Profiler.</p>
+
+<h3>4.6 Memory Profiler — tìm rò rỉ</h3>
+<p>Cài <code>com.unity.memoryprofiler</code> qua Package Manager. Chụp <strong>snapshot</strong> từ Editor hoặc từ máy đang nối. Xem theo tab <strong>Unity Objects</strong>, sắp theo dung lượng hoặc số lượng.</p>
+<p><strong>Quy trình tìm rò theo §9.6:</strong></p>
+<ol>
+  <li>Chụp snapshot A ở màn hình đầu.</li>
+  <li>Chơi qua ~10 level.</li>
+  <li>Chụp snapshot B.</li>
+  <li>Bật chế độ <strong>Compare</strong>, nhìn cột chênh lệch của <code>Texture2D</code>, <code>Material</code>, <code>Mesh</code>.</li>
+</ol>
+<p>Số lượng <strong>tăng đều theo level mà không giảm</strong> = rò. Ba nguồn hay gặp nhất:</p>
+<ul>
+  <li><code>new Material()</code> lúc chạy mà không <code>Destroy()</code> — §9.4 nói rõ: mất reference <strong>không</strong> đủ để GC thu hồi <code>UnityEngine.Object</code>.</li>
+  <li><code>Texture2D</code> / <code>RenderTexture</code> sinh bằng code, không giải phóng.</li>
+  <li>Object trong pool spawn ra mà không despawn.</li>
+</ul>
+<p><strong>Phân biệt Managed và Native:</strong> object C# thuần do GC lo. Còn <code>Texture2D</code>, <code>Material</code>, <code>Mesh</code>, <code>RenderTexture</code> là <strong>native</strong> — phải gọi <code>Destroy()</code>. Đây là ranh giới gây rò nhiều nhất.</p>
+
+<h3>4.7 Quy trình</h3>
+<ol>
+  <li>Build Development + Autoconnect lên máy tầm trung.</li>
+  <li>Chơi bình thường, nhìn biểu đồ CPU tìm chỗ gai.</li>
+  <li>Click đúng frame gai → Hierarchy → sắp theo <strong>Self ms</strong>, rồi sắp theo <strong>GC Alloc</strong>.</li>
+  <li>Xác nhận bằng công cụ chuyên: <strong>Frame Debugger</strong> cho phần vẽ, <strong>Memory Profiler</strong> cho RAM.</li>
+</ol>
+<p>Bước 4 mới là chỗ ra kết luận. Profiler chỉ nói <em>có vấn đề ở đâu</em>.</p>
+
+<hr>
+<h2>5. Overdraw</h2>
+
+<h3>5.1 Vì sao nó đắt trên mobile</h3>
+<p>GPU mobile là <strong>tile-based</strong>. Mỗi pixel bị vẽ chồng thêm một lớp là một lần đọc–trộn–ghi nữa. Chi phí tính theo <strong>diện tích màn hình × số lớp</strong>, không theo số tam giác — nên một tấm trong suốt phủ cả màn hình đắt hơn nhiều so với một mô hình vài nghìn đỉnh.</p>
+<p>Hình <strong>đục</strong> được loại sớm bằng early-Z: cái bị che thì không vẽ. Hình <strong>trong suốt thì không</strong> — phải vẽ từ sau ra trước và trộn từng lớp. Mà UI thì gần như trong suốt hoàn toàn, nên với game 2D/UI đây thường là chi phí GPU lớn nhất.</p>
+
+<h3>5.2 Nhìn thấy nó</h3>
+<p><code>Scene view → dropdown Draw Mode → <strong>Overdraw</strong></code>. Càng sáng càng nhiều lớp chồng. Mở popup lên rồi nhìn — chỗ trắng xoá là chỗ phải sửa.</p>
+
+<h3>5.3 Framework popup của project này</h3>
+<p>Mở một popup là chồng sẵn 5–6 lớp:</p>
+<pre><code>PopupDim (full màn, alpha 0.6)
+  Card (gần full)
+    TitleBar → TitleText → Message → Button → chữ trong Button</code></pre>
+<p>Và <code>ShowAction.DoNothing</code> mở popup chồng lên popup — <strong>hai lớp Dim full màn cùng lúc</strong>, trong khi popup dưới vẫn đang được vẽ đầy đủ dù không ai nhìn thấy.</p>
+
+<h3>5.4 Bốn cách chữa, theo thứ tự đáng làm</h3>
+<ol>
+  <li><strong>Tắt <code>Canvas</code> của popup bị che.</strong> Popup nằm dưới vẫn vẽ đủ mọi lớp. Tắt component <code>Canvas</code> là ngừng vẽ mà mesh còn nguyên (§3.5). <code>ShowAction.PauseCurrent</code> nên làm việc này.</li>
+  <li><strong>Một lớp Dim dùng chung</strong>, do controller quản, thay vì mỗi popup một cái. Hai popup chồng nhau thì nền tối gấp đôi — vừa xấu vừa tốn.</li>
+  <li><strong>Background full màn để đục.</strong> Ảnh nền không cần alpha thì tắt kênh alpha đi; lớp đục chặn được mọi thứ phía sau.</li>
+  <li><strong>Sprite <code>Mesh Type: Tight</code>.</strong> Sprite có nhiều vùng trong suốt (hiệu ứng, tia sáng) mà để <code>Full Rect</code> là vẽ cả phần rỗng. <code>Tight</code> cắt lưới bám theo hình.</li>
+</ol>
+<p>Particle là nguồn overdraw lớn thứ hai sau UI — nhiều hạt lớn trong suốt chồng nhau tốn hơn mọi thứ khác trong scene.</p>
+
+<hr>
+<h2>6. Dung lượng build</h2>
+
+<h3>6.1 Vì sao quan tâm</h3>
+<p>Với game casual, dung lượng ảnh hưởng thẳng tới <strong>tỉ lệ cài đặt</strong> — người ta bỏ ngang khi thấy con số quá to, nhất là khi đang dùng 4G. Đây là chỉ số marketing, không chỉ là chỉ số kỹ thuật.</p>
+
+<h3>6.2 Nhìn cái gì đang nặng</h3>
+<p>Sau mỗi lần build, <code>Editor.log</code> có mục <strong>Build Report</strong> liệt kê asset theo dung lượng chưa nén, kèm bảng chia theo loại (Textures / Meshes / Sounds / Animations / Scripts / Included DLLs).</p>
+<p>Đây là <strong>nguồn sự thật duy nhất</strong> cho câu "cái gì làm build to". Gần như không ai biết nó tồn tại, và mọi phỏng đoán không có nó đều là đoán mò.</p>
+
+<h3>6.3 Thư viện thường nặng hơn asset</h3>
+<p>Với template này, phần lớn dung lượng không phải ảnh mà là <strong>SDK</strong>. Riêng mediation đang có <strong>12 adapter</strong>:</p>
+<pre><code>BidMachine · ByteDance · Chartboost · Facebook · Fyber
+Google · GoogleAdManager · InMobi · IronSource · Mintegral · UnityAds · Vungle</code></pre>
+<p>Mỗi cái là code native thật. Gỡ adapter không dùng trong <strong>AppLovin Integration Manager</strong> là cách giảm size nhanh nhất, và không ảnh hưởng gì tới doanh thu nếu mạng đó vốn không có fill.</p>
+
+<h3>6.4 Các setting</h3>
+<p>Project này đã đúng sẵn: <code>scriptingBackend: IL2CPP</code>, <code>managedStrippingLevel: Medium</code>, <code>stripEngineCode: 1</code>.</p>
+<ul>
+  <li><strong>Android App Bundle (AAB)</strong> thay vì APK — Play chỉ giao đúng ABI và mật độ màn hình của máy đó, người dùng tải ít hơn hẳn.</li>
+  <li><strong>Managed Stripping Level</strong> — <code>Medium</code> là mức hợp lý. Lên <code>High</code> cắt được thêm nhưng <strong>hay làm hỏng code chạy bằng reflection</strong>: deserialize JSON, callback từ SDK, <code>[Serializable]</code> chỉ được tham chiếu gián tiếp.</li>
+  <li><strong><code>link.xml</code></strong> — khi stripping cắt nhầm, đây là chỗ khai báo giữ lại type/assembly. Triệu chứng: chạy trong Editor thì đúng, build ra máy thật thì null hoặc mất field.</li>
+  <li><strong>Texture</strong> (§1.2) chỉ ship một định dạng nén, không phải tất cả — nên chọn ASTC không làm build phình.</li>
+</ul>
+
+<h3>6.5 Thư mục <code>Resources</code></h3>
+<p><strong>Mọi thứ trong <code>Resources/</code> đều vào build</strong>, dùng hay không dùng, và được index lúc khởi động. Đây là chỗ rác tích tụ âm thầm.</p>
+<p>Project này đang sạch: gần hết 48 file nằm dưới <code>GoogleMobileAds/Editor/Resources/</code> — thư mục <code>Editor</code> nên không vào build.</p>
+
+<hr>
+<h2>7. Mấy thứ vặt hay bị bỏ quên</h2>
+
+<h3>7.1 GC — làm sao xuống 0 B/frame</h3>
+<p>§4.3 đặt mục tiêu, đây là cách đạt:</p>
+<ul>
+  <li><strong>Boxing</strong> — truyền struct vào tham số kiểu <code>object</code>/interface, dùng enum làm key <code>Dictionary</code> mà không có comparer, <code>string.Format</code> với số.</li>
+  <li><strong>Nối chuỗi</strong> — dùng <code>StringBuilder</code>, hoặc cache sẵn chuỗi không đổi. Chuỗi nội suy trong <code>Tick()</code> là cấp phát mỗi frame.</li>
+  <li><strong><code>foreach</code></strong> qua <code>List&lt;T&gt;</code> thì không cấp phát (enumerator là struct); qua <code>IList&lt;T&gt;</code> / <code>IEnumerable&lt;T&gt;</code> thì <strong>có</strong> — vì bị boxing.</li>
+  <li><strong>Physics</strong> — dùng <code>RaycastNonAlloc</code>, <code>OverlapSphereNonAlloc</code> với mảng cấp sẵn.</li>
+  <li><strong>List / Dictionary</strong> — cấp sẵn dung lượng (<code>new List&lt;T&gt;(64)</code>) để không phải cấp lại khi lớn dần.</li>
+  <li><strong>Closure</strong> — lambda bắt biến bên ngoài sinh object mỗi lần tạo. Tránh trong vòng lặp nóng.</li>
+</ul>
+<p><strong>Incremental GC</strong> (<code>Player Settings</code>) chia việc thu gom ra nhiều frame. Nó <strong>không giảm</strong> lượng cấp phát, chỉ làm cú khựng bớt gắt — vẫn phải sửa gốc.</p>
+
+<h3>7.2 Shader variant và warmup</h3>
+<p>Shader <strong>biên dịch lần đầu được dùng</strong>, nên hiệu ứng nào xuất hiện lần đầu cũng kèm một cú khựng. Càng nhiều <code>#pragma multi_compile</code> thì số variant càng nhân lên.</p>
+<p>Chữa bằng <strong><code>ShaderVariantCollection</code></strong>: chơi thử để nó ghi lại các variant thật sự dùng, rồi gọi <code>WarmUp()</code> lúc load.</p>
+<p>Đi kèm với cảnh báo ở §9.4 của CLAUDE.md: shader <strong>không được asset nào tham chiếu sẽ bị strip khỏi build</strong> — Editor chạy đẹp, máy thật ra màu hồng.</p>
+
+<h3>7.3 TextMeshPro — font atlas</h3>
+<p>TMP có hai kiểu atlas chữ:</p>
+<ul>
+  <li><strong>Dynamic</strong> — glyph nào chưa có thì nướng vào atlas <strong>lúc chạy</strong>. Tiện, nhưng gây khựng lúc chữ mới xuất hiện lần đầu, và atlas phình dần.</li>
+  <li><strong>Static</strong> — nướng sẵn trọn bộ ký tự lúc build. Đoán trước được, không phình.</li>
+</ul>
+<p><strong>Tiếng Việt là ca đáng chú ý</strong>: bộ dấu làm số glyph lớn hơn hẳn tiếng Anh. Dùng dynamic thì atlas cứ lớn dần theo chữ người chơi gặp.</p>
+<blockquote>
+<p>Dấu hiệu nhận biết: file <code>LiberationSans SDF - Fallback.asset</code> liên tục bị đánh dấu thay đổi trong git — đó chính là TMP đang nướng glyph mới vào atlas dự phòng. Project này đang có đúng triệu chứng đó.</p>
+</blockquote>
+<p>Atlas 1024×1024 thường là đủ; để 4096 là phí RAM. Và mỗi font fallback trong chuỗi đều bị duyệt khi thiếu glyph, nên chuỗi dài thì tra chậm.</p>
+
+<h3>7.4 Boxing và unboxing</h3>
+<p><strong>Boxing</strong> là gói một <em>value type</em> (<code>int</code>, <code>bool</code>, <code>enum</code>, struct, <code>Vector3</code>...) vào một object trên <strong>heap</strong> để nó đi được qua chỗ nhận <code>object</code> hoặc interface. <strong>Unboxing</strong> là lôi giá trị ra.</p>
+<p>Điểm mấu chốt: <strong>boxing cấp phát trên heap</strong>. Mỗi lần box là một mẩu rác — nên nó nằm ngay đầu danh sách khi truy mục tiêu 0 B/frame ở §4.3.</p>
+<pre><code>int i = 5;
+object o = i;        // BOXING   — cấp phát
+int back = (int)o;   // UNBOXING — không cấp phát, nhưng có kiểm tra kiểu</code></pre>
+<p><strong>Năm chỗ nó xảy ra mà không ai gõ chữ "box":</strong></p>
+<ol>
+  <li><strong>Truyền value type vào tham số <code>object</code></strong> — kể cả <code>params object[]</code>, vì cấp phát luôn cả mảng. Ví dụ ngay trong framework: <code>Dacoder.Log(params object[] os)</code>. May là <code>Dacoder</code> có <code>[Conditional]</code> nên bản release xoá sạch cả lời gọi lẫn đối số — đúng lý do §9.4 bắt dùng <code>Dacoder</code> thay <code>Debug.Log</code>.</li>
+  <li><strong>Chuỗi nội suy.</strong> Unity dùng <strong>C# 9</strong>, chưa có <code>DefaultInterpolatedStringHandler</code> của C# 10, nên chuỗi nội suy dịch thành <code>string.Format(string, object)</code> và <strong>box</strong> giá trị.</li>
+  <li><strong><code>foreach</code> qua interface</strong> — ca khó thấy nhất:
+    <pre><code>List&lt;int&gt; list;
+foreach (var x in list) { }        // KHÔNG box, enumerator là struct
+
+IEnumerable&lt;int&gt; seq = list;
+foreach (var x in seq) { }         // BOX enumerator mỗi vòng lặp</code></pre>
+    Cùng dữ liệu, chỉ khác kiểu khai báo biến.</li>
+  <li><strong>Struct gọi qua interface</strong> — <code>IComparable c = 5;</code> box.</li>
+  <li><strong>Enum làm key <code>Dictionary</code></strong> — từng là lỗi kinh điển vì comparer mặc định box mỗi lần tra. Bản Unity mới đã vá phần lớn, nên đừng sửa mù: nhìn cột GC Alloc rồi mới quyết.</li>
+</ol>
+<p><strong>Boxing KHÔNG phải cấm tuyệt đối — chỉ cấm ở đường nóng.</strong> Ví dụ ngay trong framework:</p>
+<pre><code>public class PersistentData : AbstractPersistentData&lt;string, object&gt;
+public void Set(K key, V value) =&gt; data[key] = value;   // V = object</code></pre>
+<p><code>GameData.Set("coin", 100)</code> có box thật. Nhưng save data phải chứa nhiều kiểu trong một dictionary nên <code>object</code> là cách hợp lý, và nó chỉ chạy lúc qua màn hay mua hàng — <strong>không nằm trong vòng lặp frame</strong>. Một lần box khi bấm nút là vô hình; một lần box mỗi frame × 60 là rác liên tục.</p>
+<p><strong>Cách tránh khi cần:</strong></p>
+<ul>
+  <li><strong>Generic thay cho <code>object</code></strong> — <code>void Log&lt;T&gt;(T value)</code> không box, runtime sinh bản riêng cho từng value type.</li>
+  <li><strong>Chọn đúng overload</strong> — <code>StringBuilder.Append(int)</code> không box, <code>Append(object)</code> thì có.</li>
+  <li><strong>Khai biến bằng kiểu cụ thể</strong>, đừng để <code>IEnumerable&lt;T&gt;</code> nếu không cần.</li>
+  <li><strong>Cache giá trị đã box</strong> nếu buộc phải box lặp lại cùng một giá trị.</li>
+</ul>
+<p><strong>Cách nhìn thấy:</strong> chỉ có cột <strong><code>GC Alloc</code></strong> trong Profiler Hierarchy (§4.3). Boxing không có cảnh báo biên dịch, không gạch chân trong IDE — nó chỉ hiện ra dưới dạng vài chục byte mỗi frame ở một hàm mà nhìn code thì tưởng không cấp phát gì.</p>
+
+<hr>
+<p class="foot">Bản gốc để sửa: <code>Docs/NOTES.md</code>. Sửa ở đó rồi bảo mình dựng lại file này.</p>
+
+</div>
+</body>
+</html>

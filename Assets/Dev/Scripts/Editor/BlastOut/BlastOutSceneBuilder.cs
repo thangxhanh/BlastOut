@@ -1,0 +1,311 @@
+using System.Collections.Generic;
+using Dev.Scripts.BlastOut;
+using Dev.Scripts.BlastOut.Gameplay;
+using Dev.Scripts.BlastOut.UI;
+using TMPro;
+using UnityEditor;
+using UnityEditor.SceneManagement;
+using UnityEngine;
+
+namespace Dev.Scripts.BlastOut.Authoring
+{
+    /* Dựng toàn bộ scene chơi thử Level 1 bằng một lệnh menu.
+
+       Tồn tại vì hai lý do, không phải để khoe tool:
+       1. Scene/prefab là asset nhị phân — dựng bằng code thì diff trên git đọc được là "đã đổi gì",
+          và dựng lại được y hệt trên máy khác.
+       2. Bố cục level nằm trong asset dữ liệu, còn scene chỉ là khung. Thêm level không cần chạy
+          lại tool này — chỉ tạo thêm một BlastLevelConfig rồi kéo vào controller. */
+    public static class BlastOutSceneBuilder
+    {
+        const string ScenePath = "Assets/Dev/Scenes/BlastOut.unity";
+        static readonly Color SteelColor = new Color32(0x6E, 0x76, 0x88, 0xFF);
+        static readonly Color ZoneColor = new Color32(0x2E, 0xD0, 0x9A, 0x44);
+
+        [MenuItem("Tools/Blast Out/Build Level 1 Scene", false, 0)]
+        public static void Build()
+        {
+            /* Mở scene trắng TRƯỚC khi tạo prefab: SaveAsPrefabAsset dựng object tạm trong scene
+               đang mở rồi xoá đi, nên nếu làm ngược lại thì scene của người dùng bị đánh dấu dirty
+               và NewScene bật hộp thoại "Save changes?" giữa chừng. */
+            if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
+            var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
+
+            var square = BlastOutAssetFactory.CreateSquareSprite("square", 16);
+            var circle = BlastOutAssetFactory.CreateCircleSprite("circle", 64);
+
+            var tuning = BlastOutAssetFactory.CreateTuning();
+            var level = BlastOutAssetFactory.CreateLevelOne();
+            var trailMaterial = BlastOutPrefabFactory.CreateTrailMaterial();
+
+            var platformPrefab = BlastOutPrefabFactory.CreatePlatform(square);
+            var blockPrefab = BlastOutPrefabFactory.CreateBlock(square, tuning);
+            var barrelPrefab = BlastOutPrefabFactory.CreateBarrel(square, tuning);
+            var projectilePrefab = BlastOutPrefabFactory.CreateProjectile(circle, tuning, trailMaterial);
+            var dotPrefab = BlastOutPrefabFactory.CreateDot(circle);
+
+            AssetDatabase.SaveAssets();
+
+            var camera = BuildCamera();
+            var launcher = BuildLauncher(square, out var barrelPivot, out var muzzle);
+            var preview = BuildPreview(dotPrefab, tuning);
+            var collectZone = BuildCollectZone(square);
+            var containers = new GameObject("World").transform;
+            var levelRoot = NewChild(containers, "Level");
+            var projectileRoot = NewChild(containers, "Projectiles");
+
+            var hud = BuildHud();
+            var aim = BuildAim(launcher, muzzle, barrelPivot, preview, tuning);
+            var builder = BuildLevelBuilder(levelRoot, platformPrefab, blockPrefab, barrelPrefab);
+            var controller = BuildController(level, tuning, camera, aim, builder, collectZone, preview,
+                launcher.transform, projectileRoot, projectilePrefab, hud);
+
+            BuildSceneLauncher(preview, aim, builder, collectZone, hud, controller);
+
+            BlastOutAssetFactory.EnsureFolder("Assets/Dev/Scenes");
+            EditorSceneManager.SaveScene(scene, ScenePath);
+            RegisterInBuildSettings();
+
+            AssetDatabase.SaveAssets();
+            AssetDatabase.Refresh();
+
+            Debug.Log("[BlastOut] Scene đã dựng xong: " + ScenePath +
+                      "\nĐặt Game view sang tỉ lệ dọc (9:16) rồi bấm Play. Kéo bất kỳ đâu để ngắm, " +
+                      "thả để bắn, chạm lần nữa lúc đạn đang bay để kích nổ.");
+        }
+
+        /* Đưa scene lên đầu Build Settings: thiếu bước này thì bấm Play trong Editor vẫn chạy,
+           nhưng build APK ra lại mở một scene khác — một cái bẫy rất dễ mất thời gian. */
+        static void RegisterInBuildSettings()
+        {
+            var scenes = new List<EditorBuildSettingsScene>(EditorBuildSettings.scenes);
+            scenes.RemoveAll(s => s.path == ScenePath);
+            scenes.Insert(0, new EditorBuildSettingsScene(ScenePath, true));
+            EditorBuildSettings.scenes = scenes.ToArray();
+        }
+
+        static Camera BuildCamera()
+        {
+            var go = new GameObject("Main Camera");
+            go.tag = "MainCamera";
+            go.transform.position = new Vector3(0f, 0f, -10f);
+
+            var camera = go.AddComponent<Camera>();
+            camera.orthographic = true;
+            camera.orthographicSize = 8f;
+            camera.clearFlags = CameraClearFlags.SolidColor;
+            camera.backgroundColor = BlastOutAssetFactory.SkyColor;
+            return camera;
+        }
+
+        static GameObject BuildLauncher(Sprite square, out Transform barrelPivot, out Transform muzzle)
+        {
+            var root = new GameObject("Launcher");
+
+            var basePart = NewSprite(root.transform, "Base", square, SteelColor, 1);
+            basePart.localPosition = Vector3.zero;
+            basePart.localScale = new Vector3(1f, 0.55f, 1f);
+
+            barrelPivot = NewChild(root.transform, "BarrelPivot");
+
+            var barrel = NewSprite(barrelPivot, "Barrel", square, SteelColor, 0);
+            /* Nòng lệch sang phải so với pivot: xoay pivot là nòng quét quanh gốc pháo, đúng cảm giác. */
+            barrel.localPosition = new Vector3(0.5f, 0f, 0f);
+            barrel.localScale = new Vector3(1.1f, 0.34f, 1f);
+
+            muzzle = NewChild(barrelPivot, "Muzzle");
+            muzzle.localPosition = new Vector3(1.05f, 0f, 0f);
+
+            return root;
+        }
+
+        static TrajectoryPreview BuildPreview(SpriteRenderer dotPrefab, Object tuning)
+        {
+            var go = new GameObject("TrajectoryPreview");
+            var preview = go.AddComponent<TrajectoryPreview>();
+
+            new SerializedFieldWriter(preview)
+                .Ref("dotPrefab", dotPrefab)
+                .Ref("tuning", tuning)
+                .Tint("dotColor", BlastOutAssetFactory.DotColor)
+                .Float("headScale", 0.22f)
+                .Float("tailScale", 0.09f)
+                .Apply();
+            BlastOutPrefabFactory.BindBase(preview);
+
+            return preview;
+        }
+
+        static CollectZone BuildCollectZone(Sprite square)
+        {
+            var go = new GameObject("CollectZone");
+
+            var box = go.AddComponent<BoxCollider2D>();
+            box.isTrigger = true;
+
+            var visual = NewSprite(go.transform, "Visual", square, ZoneColor, -1);
+
+            var zone = go.AddComponent<CollectZone>();
+            new SerializedFieldWriter(zone).Ref("area", box).Ref("visual", visual).Apply();
+            BlastOutPrefabFactory.BindBase(zone);
+
+            return zone;
+        }
+
+        static AimController BuildAim(GameObject launcher, Transform muzzle, Transform barrelPivot,
+            TrajectoryPreview preview, Object tuning)
+        {
+            var aim = launcher.AddComponent<AimController>();
+
+            new SerializedFieldWriter(aim)
+                .Ref("muzzle", muzzle)
+                .Ref("barrelPivot", barrelPivot)
+                .Ref("preview", preview)
+                .Ref("tuning", tuning)
+                .Apply();
+            BlastOutPrefabFactory.BindBase(aim);
+
+            return aim;
+        }
+
+        static LevelBuilder BuildLevelBuilder(Transform container, Transform platformPrefab,
+            TargetBlock blockPrefab, ExplosiveBarrel barrelPrefab)
+        {
+            var go = new GameObject("LevelBuilder");
+            var builder = go.AddComponent<LevelBuilder>();
+
+            new SerializedFieldWriter(builder)
+                .Ref("container", container)
+                .Ref("platformPrefab", platformPrefab)
+                .Ref("blockPrefab", blockPrefab)
+                .Ref("barrelPrefab", barrelPrefab)
+                .Float("platformThickness", 0.32f)
+                .Apply();
+            BlastOutPrefabFactory.BindBase(builder);
+
+            return builder;
+        }
+
+        static BlastGameController BuildController(Object level, Object tuning, Camera camera,
+            AimController aim, LevelBuilder builder, CollectZone zone, TrajectoryPreview preview,
+            Transform launcherRoot, Transform projectileRoot, BlastProjectile projectilePrefab,
+            BlastHudView hud)
+        {
+            var go = new GameObject("BlastGameController");
+            var controller = go.AddComponent<BlastGameController>();
+
+            new SerializedFieldWriter(controller)
+                .Ref("level", level)
+                .Ref("tuning", tuning)
+                .Ref("view", camera)
+                .Ref("aim", aim)
+                .Ref("builder", builder)
+                .Ref("collectZone", zone)
+                .Ref("preview", preview)
+                .Ref("launcherRoot", launcherRoot)
+                .Ref("projectileContainer", projectileRoot)
+                .Ref("projectilePrefab", projectilePrefab)
+                .Ref("hud", hud)
+                .Apply();
+
+            /* Controller là BaseMono DUY NHẤT đăng ký Tick — mọi thứ khác được nó gọi xuống. */
+            BlastOutPrefabFactory.BindBase(controller, tick: true);
+
+            return controller;
+        }
+
+        static void BuildSceneLauncher(params Dacodelaac.Core.BaseMono[] systems)
+        {
+            var go = new GameObject("BlastSceneLauncher");
+            var launcher = go.AddComponent<BlastSceneLauncher>();
+
+            new SerializedFieldWriter(launcher)
+                .Refs("sceneSystems", systems)
+                .Refs("prefabs")
+                .Apply();
+            BlastOutPrefabFactory.BindBase(launcher);
+        }
+
+        static BlastHudView BuildHud()
+        {
+            var go = new GameObject("HUD", typeof(RectTransform));
+            var canvas = go.AddComponent<Canvas>();
+            canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+
+            var scaler = go.AddComponent<UnityEngine.UI.CanvasScaler>();
+            scaler.uiScaleMode = UnityEngine.UI.CanvasScaler.ScaleMode.ScaleWithScreenSize;
+            scaler.referenceResolution = new Vector2(1080f, 1920f);
+            scaler.matchWidthOrHeight = 0.5f;
+            go.AddComponent<UnityEngine.UI.GraphicRaycaster>();
+
+            var levelLabel = NewLabel(go.transform, "LevelLabel", "LEVEL 01", 44f,
+                new Vector2(0f, 1f), new Vector2(40f, -70f), TextAlignmentOptions.TopLeft);
+            var ammoLabel = NewLabel(go.transform, "AmmoLabel", "AMMO 2/2", 44f,
+                new Vector2(1f, 1f), new Vector2(-40f, -70f), TextAlignmentOptions.TopRight);
+            var hintLabel = NewLabel(go.transform, "HintLabel", "DRAG TO AIM", 38f,
+                new Vector2(0.5f, 0f), new Vector2(0f, 190f), TextAlignmentOptions.Center);
+            hintLabel.color = new Color(0.66f, 0.71f, 0.83f);
+
+            var bannerRoot = new GameObject("Banner", typeof(RectTransform));
+            bannerRoot.transform.SetParent(go.transform, false);
+            var bannerLabel = NewLabel(bannerRoot.transform, "BannerLabel", "LEVEL CLEAR", 52f,
+                new Vector2(0.5f, 0f), new Vector2(0f, 120f), TextAlignmentOptions.Center);
+            bannerRoot.SetActive(false);
+
+            var hud = go.AddComponent<BlastHudView>();
+            new SerializedFieldWriter(hud)
+                .Ref("levelLabel", levelLabel)
+                .Ref("ammoLabel", ammoLabel)
+                .Ref("hintLabel", hintLabel)
+                .Ref("bannerLabel", bannerLabel)
+                .Ref("bannerRoot", bannerRoot)
+                .Apply();
+            BlastOutPrefabFactory.BindBase(hud);
+
+            return hud;
+        }
+
+        static TMP_Text NewLabel(Transform parent, string name, string text, float size,
+            Vector2 anchor, Vector2 offset, TextAlignmentOptions alignment)
+        {
+            var go = new GameObject(name, typeof(RectTransform));
+            go.transform.SetParent(parent, false);
+
+            var label = go.AddComponent<TextMeshProUGUI>();
+            label.text = text;
+            label.fontSize = size;
+            label.alignment = alignment;
+            label.color = Color.white;
+            label.raycastTarget = false;
+
+            var rect = label.rectTransform;
+            rect.anchorMin = anchor;
+            rect.anchorMax = anchor;
+            rect.pivot = anchor;
+            rect.sizeDelta = new Vector2(900f, 90f);
+            rect.anchoredPosition = offset;
+
+            return label;
+        }
+
+        static Transform NewSprite(Transform parent, string name, Sprite sprite, Color color, int order)
+        {
+            var go = new GameObject(name);
+            go.transform.SetParent(parent, false);
+
+            var renderer = go.AddComponent<SpriteRenderer>();
+            renderer.sprite = sprite;
+            renderer.color = color;
+            renderer.sortingOrder = order;
+
+            return go.transform;
+        }
+
+        static Transform NewChild(Transform parent, string name)
+        {
+            var go = new GameObject(name);
+            go.transform.SetParent(parent, false);
+            return go.transform;
+        }
+    }
+}
