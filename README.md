@@ -55,7 +55,7 @@ Thêm loại đạn mới = thêm một nhánh trong `BlastProjectile.Detonate`.
 
 **3. Một điểm vào duy nhất mỗi frame.** Chỉ `BlastGameController` đăng ký tick; mọi thứ khác được nó gọi xuống (`ManualTick`). Không component nào có `Update()` riêng. Nhờ vậy thứ tự trong một frame là đọc được, và bật/tắt cả gameplay chỉ là bật/tắt một object.
 
-**4. Bệ chạy đi theo nhịp vật lý, không theo nhịp render.** Ban đầu đẩy bệ trong `Tick()` và khối **tụt dần khỏi bệ** dù ma sát đã tối đa — vì vận tốc được đặt lệch pha với lúc va chạm được giải. Chuyển sang `FixedTick` là hết. Đo được: trôi `0.363 → 0.386 → 0.409` (liên tục) trước khi sửa, ổn định `0.128` sau khi sửa. Nếu không sửa, khối tự rơi vào vùng thu khi người chơi chưa bắn phát nào — level tự thắng.
+**4. Bệ chạy: hai lỗi khác nhau cùng làm khối tụt khỏi bệ.** Lỗi thứ nhất — đẩy bệ trong `Tick()` khiến vận tốc đặt lệch pha với lúc va chạm được giải; chuyển sang `FixedTick` thì trôi giảm từ `0.363 → 0.409` (tăng liên tục) xuống còn `0.128`. Lỗi thứ hai tinh vi hơn: quỹ đạo dạng `sin` có vị trí bằng 0 tại `t = 0` nhưng **vận tốc đã là cực đại**, nên bệ lao đi hết tốc lực ngay từ trạng thái đứng yên. Nhân biên độ với một hàm tăng dần (smoothstep) làm cả vận tốc lẫn gia tốc xuất phát từ 0 — trôi về đúng `0.000`. Nếu không sửa, khối tự rơi vào vùng thu khi người chơi chưa bắn phát nào.
 
 **5. Cắt bỏ toàn bộ tầng meta.** Project gốc là template có sẵn Firebase, AdMob, AppLovin, Adjust, IAP, notification, anti-cheat. Đề ghi rõ những thứ này ngoài scope, nên **xoá hẳn** thay vì để đó: `Assets/` từ ~100MB còn **16MB**, và người đọc code không phải lội qua thứ không liên quan để tìm gameplay.
 
@@ -72,7 +72,8 @@ Thêm loại đạn mới = thêm một nhánh trong `BlastProjectile.Detonate`.
 | Hạng mục | Trước | Sau |
 |---|---|---|
 | Chờ sau một cú bắn hỏng (đạn bay ra ngoài màn) | **6.4s** | **0.634s** |
-| Khối trôi trên bệ chạy | 0.363 → 0.409, tăng liên tục | **0.128**, đứng yên |
+| Khối trôi trên bệ chạy | 0.363 → 0.409, tăng liên tục | **0.000** |
+| Vận tốc bệ tại thời điểm khởi động | 1.60 (cực đại ngay lập tức) | **0.00**, tăng dần |
 | Level 4: nổ trúng khối | thùng nổ theo → thắng | thùng còn nguyên → **thua** (đúng ý đồ) |
 | Level 4: nổ trúng thùng | thắng | **thắng** (đường thắng vẫn còn) |
 
