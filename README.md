@@ -66,8 +66,6 @@ Thêm loại đạn mới = thêm một nhánh trong `BlastProjectile.Detonate`.
 
 **4. Bệ chạy: hai lỗi khác nhau cùng làm khối tụt khỏi bệ.** Lỗi thứ nhất — đẩy bệ trong `Tick()` khiến vận tốc đặt lệch pha với lúc va chạm được giải; chuyển sang `FixedTick` thì trôi giảm từ `0.363 → 0.409` (tăng liên tục) xuống còn `0.128`. Lỗi thứ hai tinh vi hơn: quỹ đạo dạng `sin` có vị trí bằng 0 tại `t = 0` nhưng **vận tốc đã là cực đại**, nên bệ lao đi hết tốc lực ngay từ trạng thái đứng yên. Nhân biên độ với một hàm tăng dần (smoothstep) làm cả vận tốc lẫn gia tốc xuất phát từ 0 — trôi về đúng `0.000`. Nếu không sửa, khối tự rơi vào vùng thu khi người chơi chưa bắn phát nào.
 
-**5. Cắt bỏ toàn bộ tầng meta.** Project gốc là template có sẵn Firebase, AdMob, AppLovin, Adjust, IAP, notification, anti-cheat. Đề ghi rõ những thứ này ngoài scope, nên **xoá hẳn** thay vì để đó: `Assets/` từ ~100MB còn **16MB**, và người đọc code không phải lội qua thứ không liên quan để tìm gameplay.
-
 ---
 
 ## 4. Technical & performance
