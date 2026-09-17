@@ -110,15 +110,38 @@ Hệ quả: vụ nổ "với tới" những thứ ở rất xa, khối bị đ�
 
 **Treo game vì hitstop.** Khựng hình đặt `Time.timeScale = 0`; nếu đếm bằng `Time.deltaTime` thì đồng hồ đứng luôn và game treo vĩnh viễn. Toàn bộ phần này tick bằng `unscaledDeltaTime`, và `CleanUp()` trả `timeScale` về 1 phòng trường hợp thoát scene giữa lúc đang khựng. Đã verify: `1 → 0 → 1`, tự nhả.
 
-**Quy mô hiện tại rất nhỏ** — mỗi level dưới 10 rigidbody động, vài chục collider, một hệ hạt bốn lớp lúc nổ. Đây là lý do chưa tối ưu thêm: chưa có vấn đề thật để giải. Số draw call thì **chưa đo** — sprite chưa gom Sprite Atlas nên gần như chắc chắn còn giảm được, nhưng nói một con số cụ thể lúc này chỉ là đoán.
+### Kiểm rò rỉ bộ nhớ
 
-### ⚠️ Chưa làm
+Chụp snapshot, chơi tự động qua **cả 9 level × 2 lượt (36 phát bắn, 20 vụ nổ)**, chụp lại, rồi lặp thêm một vòng nữa để phân biệt *rò rỉ* với *nạp trễ một lần*:
 
-Ba thứ dưới đây **chưa chạy**, và không thể kết luận thay bằng số liệu Editor:
+| | ban đầu | sau 18 lượt | sau 36 lượt |
+|---|---|---|---|
+| `Material` | 91 | 94 | **94** |
+| `Texture2D` | 1216 | 1221 | **1221** |
+| Object sống trong scene | 94 | 94 | **94** |
 
-- **Chơi APK trên máy thật** — chỉ ở đây mới lộ ra shader strip, nén texture và RAM thật.
-- **Memory Profiler** — chụp 2 snapshot cách nhau vài level, so số lượng `Material` và `Texture2D`. Tăng đều theo level = rò rỉ.
-- **Frame Debugger** — đếm draw call thật.
+Material và Texture **đứng yên ở vòng hai** — phần tăng ở vòng đầu là asset VFX nạp lần đầu khi dùng tới, không phải rò rỉ. Số object trong scene khớp đúng pool đã cấu hình: 6 hiệu ứng nổ, 3 mảnh vỡ, 4 đạn.
+
+Một cái bẫy khi đo: chạy nhiều lượt trong **cùng một frame** thì `Destroy()` chưa kịp thực thi (Unity xử lý nó cuối frame), và số object vọt lên `+102` trông y như rò rỉ. Đếm lại ở frame kế tiếp thì về đúng 94.
+
+### Draw call
+
+Đo bằng `UnityStats` trong Play mode, Level 9 (nhiều vật thể nhất):
+
+| | tĩnh | lúc nổ dây chuyền |
+|---|---|---|
+| Draw calls | 13 | **33** |
+| Batches | 13 | 16 |
+| SetPass calls | 12 | 16 |
+| Triangles | 140 | 408 |
+| Hạt đang sống | 0 | 138 |
+| Render time | — | **0.35 ms** |
+
+33 draw call ở đỉnh là rất nhẹ. Sprite chưa gom Sprite Atlas nên còn giảm được, nhưng **chưa có vấn đề thật để giải** — render chỉ chiếm 0.35 ms trong frame.
+
+### ⚠️ Vẫn chưa làm
+
+**Chơi APK trên máy thật.** Mọi số liệu trên đều lấy trong Editor, mà Editor không nói gì về shader bị strip, texture nén sai định dạng, hay RAM thật trên máy tầm trung. Đây là thứ duy nhất còn lại không thể thay thế bằng đo trong Editor.
 
 ---
 
@@ -143,7 +166,7 @@ Những chỗ output của AI **bị sửa hoặc bỏ**: bố cục level, bộ
 
 Theo thứ tự ưu tiên:
 
-1. **Profile trên máy thật + Sprite Atlas.** *Vấn đề:* toàn bộ kết luận hiệu năng hiện dựa trên Editor, mà Editor không nói gì về shader strip, nén texture hay RAM thật. *Vì sao quan trọng với người chơi:* một cú giật hình đúng lúc vụ nổ làm hỏng chính khoảnh khắc mà cả game xây dựng để dẫn tới. *Kỳ vọng:* xác nhận 60fps ổn định trên máy tầm trung, và biết chắc không rò rỉ material.
+1. **Profile trên máy thật.** *Vấn đề:* rò rỉ bộ nhớ và draw call đã đo xong trong Editor và đều sạch, nhưng Editor không nói gì về shader bị strip, texture nén sai định dạng hay RAM thật trên máy tầm trung. *Vì sao quan trọng với người chơi:* một cú giật hình đúng lúc vụ nổ làm hỏng chính khoảnh khắc mà cả game xây dựng để dẫn tới. *Kỳ vọng:* xác nhận 60fps ổn định trên máy tầm trung. Sprite Atlas thì chưa cần — 33 draw call ở đỉnh và 0.35 ms render là quá nhẹ để đáng đánh đổi thêm phức tạp.
 
 2. **Chơi thử với người thật rồi cân lại độ khó.** *Vấn đề:* thứ tự 9 level dựa trên suy luận thiết kế, chưa có ai ngoài tác giả chơi hết. *Vì sao quan trọng:* Level 4 từng *tự giải* và Level 7 từng *không thể thắng* — cả hai chỉ lộ ra khi chơi, đọc code không thấy. *Kỳ vọng:* biết màn nào làm người chơi bỏ cuộc, và sửa bố cục thay vì sửa số.
 
