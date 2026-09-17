@@ -52,8 +52,10 @@ namespace Dev.Scripts.Editor.BlastOut
             var movingPlatformPrefab = BlastOutPrefabFactory.CreateMovingPlatform(platformArt);
             var blockPrefab = BlastOutPrefabFactory.CreateBlock(blockArt, tuning);
             var barrelPrefab = BlastOutPrefabFactory.CreateBarrel(barrelArt, tuning);
-            var forbiddenPrefab = BlastOutPrefabFactory.CreateForbidden(
-                BlastOutAssetFactory.LoadKenney("Gameplay/forbidden_target.png"));
+            /* Dùng CHUNG sprite với khối mục tiêu: cùng hình, cùng cỡ, chỉ khác màu. Người chơi đọc
+               ra ngay "cái này cũng là một khối, nhưng đừng đụng vào" — khác hình dạng thì phải học
+               thêm một quy ước nữa, mà màu đã đủ để phân biệt. */
+            var forbiddenPrefab = BlastOutPrefabFactory.CreateForbidden(blockArt);
             var projectilePrefab = BlastOutPrefabFactory.CreateProjectile(circle, tuning, trailMaterial);
             var dotPrefab = BlastOutPrefabFactory.CreateDot(circle);
             var vfxPrefab = BlastOutVfxFactory.CreateExplosion();

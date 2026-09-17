@@ -26,7 +26,8 @@ namespace Dev.Scripts.Editor.BlastOut
         const float PlatformHalfThickness = 0.16f;
         const float BlockHalfHeight = 0.42f;
         const float BarrelHalfHeight = 0.45f;
-        const float ForbiddenHalfHeight = 0.5f;
+        /* Bằng khối mục tiêu: mục tiêu cấm giờ dùng chung sprite và cùng cỡ, chỉ khác màu. */
+        const float ForbiddenHalfHeight = BlockHalfHeight;
 
         public static BlastLevelConfig[] CreateAll()
         {

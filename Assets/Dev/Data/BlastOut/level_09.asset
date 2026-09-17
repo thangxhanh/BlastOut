@@ -47,4 +47,4 @@ MonoBehaviour:
   - Position: {x: -1.2, y: -0.19000003}
   - Position: {x: 2.4, y: -0.19000003}
   forbidden:
-  - Position: {x: 3.6, y: 1.66}
+  - Position: {x: 3.6, y: 1.5799999}

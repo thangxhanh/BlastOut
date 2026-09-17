@@ -24,8 +24,11 @@ namespace Dev.Scripts.Editor.BlastOut
 
         /* Mục tiêu cấm phải KHÁC HẲN mọi thứ khác trên màn: khối là nâu gỗ, thùng nổ là đỏ. Xanh lá
            chói kiểu độc/virus không trùng với thứ gì, và bản thân màu đó đã nói "đừng chạm".
-           Sprite gốc hơi ngả xanh dương nên hệ số lục phải kéo lên hết mức mới ra đúng sắc. */
-        public static readonly Color ForbiddenColor = new Color(0.35f, 1f, 0.25f, 1f);
+
+           Hệ số lục vượt 1 là có chủ đích: nó nhân lên sprite gỗ vốn ngả nâu, để 1.0 thì ra xanh
+           olive xỉn chứ không ra xanh chói. Sprites/Default nhân thẳng màu với texture nên giá trị
+           quá 1 vẫn có tác dụng, chỉ bị chặn ở bước xuất màn hình. */
+        public static readonly Color ForbiddenColor = new Color(0.3f, 2.4f, 0.28f, 1f);
         public static readonly Color ShellColor = new Color32(0xE4, 0xF4, 0xFA, 0xFF);
 
         /* Đạn tách: tím, không trùng với thứ gì khác trên màn (khối nâu, thùng đỏ, mục tiêu cấm
@@ -148,7 +151,13 @@ namespace Dev.Scripts.Editor.BlastOut
 
                 .Float("settleSpeedThreshold", 0.3f)
                 .Float("settleHoldTime", 0.3f)
-                .Float("settleTimeout", 2.5f)
+
+                /* Chốt chặn cho trường hợp vật lý không chịu lắng, KHÔNG phải để rút ngắn lượt chờ.
+                   Một khối bị hất bổng lên mất hơn 3 giây mới rơi tới vùng thu; để 2.5s thì game
+                   kết luận thua trong lúc nó còn đang bay và người chơi mất cú thắng đã giành được.
+                   Quãng chờ sau cú bắn hỏng đã được giải quyết bằng cách cho đạn biến mất ngay khi
+                   ra khỏi vùng chơi, nên chốt này để rộng cũng không làm chậm nhịp. */
+                .Float("settleTimeout", 5f)
                 .Int("trajectoryPointCount", 14)
                 .Float("trajectoryTimeStep", 0.07f)
                 .Apply();

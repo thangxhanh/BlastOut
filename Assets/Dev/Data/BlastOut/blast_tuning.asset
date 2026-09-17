@@ -34,6 +34,6 @@ MonoBehaviour:
   barrelChainDelay: 0.16
   settleSpeedThreshold: 0.3
   settleHoldTime: 0.3
-  settleTimeout: 2.5
+  settleTimeout: 5
   trajectoryPointCount: 14
   trajectoryTimeStep: 0.07

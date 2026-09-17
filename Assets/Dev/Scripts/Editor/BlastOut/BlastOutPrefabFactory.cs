@@ -123,10 +123,14 @@ namespace Dev.Scripts.Editor.BlastOut
         public static ForbiddenTarget CreateForbidden(Sprite sprite)
         {
             var go = NewSprite("forbidden_target", sprite, BlastOutAssetFactory.ForbiddenColor, 3);
+            go.transform.localScale = new Vector3(0.84f, 0.84f, 1f);
 
-            var circle = go.AddComponent<CircleCollider2D>();
-            circle.radius = 0.5f;
-            circle.sharedMaterial = GripMaterial();
+            /* Hộp chứ không phải hình tròn, và cùng cỡ với khối mục tiêu. Hình tròn thì khối bị hất
+               bổng rơi trúng sẽ trượt đi mất, không ai đoán được nó lăn về đâu; mặt phẳng thì khối
+               đáp lên là đứng yên tại chỗ, kết quả đọc được ngay. */
+            var box = go.AddComponent<BoxCollider2D>();
+            box.size = SpriteSize(sprite);
+            box.sharedMaterial = GripMaterial();
 
             var target = go.AddComponent<ForbiddenTarget>();
             new SerializedFieldWriter(target).Ref("view", go.GetComponent<SpriteRenderer>()).Apply();
