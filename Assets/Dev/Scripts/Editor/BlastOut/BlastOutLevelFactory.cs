@@ -121,7 +121,7 @@ namespace Dev.Scripts.Editor.BlastOut
            chọn đứng ở đâu thì bắn, không còn canh mỗi mục tiêu. */
         static BlastLevelConfig Level05()
         {
-            var level = Begin(5, "THE CANNON IS MOVING", new Vector2(-2.4f, -4.3f));
+            var level = Begin(5, "THE CANNON IS MOVING", new Vector2(-2.1f, -4.3f));
             var w = new SerializedFieldWriter(level);
 
             /* Pháo bám bệ số 0 — bệ đầu tiên trong mảng phải là bệ đỡ pháo. */
@@ -129,7 +129,11 @@ namespace Dev.Scripts.Editor.BlastOut
 
             Ammo(w, AmmoType.Bomb, AmmoType.Bomb);
             var platforms = w.ArrayOf("platforms", 2);
-            Platform(platforms, 0, new Vector2(-2.4f, -4.8f), 2.6f, MotionKind.Horizontal, 1.5f, 0.13f);
+
+            /* Mép ngoài cùng của bệ này = |tâm| + nửa rộng + biên độ = 2.1 + 1.3 + 1.3 = 4.7, nằm
+               trong requiredHalfWidth (4.9). Bản trước để 2.4/1.5 cho ra 5.2 nên bệ bị cắt mất một
+               đoạn ngay ở tỉ lệ 9:16 — mà đây lại là bệ chở khẩu pháo. */
+            Platform(platforms, 0, new Vector2(-2.1f, -4.8f), 2.6f, MotionKind.Horizontal, 1.3f, 0.13f);
             Platform(platforms, 1, new Vector2(1.6f, 0.4f), 3.4f);
 
             var blocks = w.ArrayOf("blocks", 2);

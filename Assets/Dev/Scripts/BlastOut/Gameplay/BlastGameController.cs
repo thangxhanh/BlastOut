@@ -23,6 +23,14 @@ namespace Dev.Scripts.BlastOut.Gameplay
            BlastOut, không đụng key nào của framework. */
         const string LevelKey = "blast_current_level";
 
+        [Header("Khung nhìn")]
+        [Tooltip("Nửa chiều rộng thế giới luôn phải nhìn thấy, tính bằng world unit. Mọi bố cục " +
+                 "level phải nằm gọn trong khoảng này ở CẢ HAI phía.")]
+        [SerializeField] float requiredHalfWidth = 4.9f;
+
+        [Tooltip("Sàn của nửa chiều cao. Giữ cho vùng thu ở đáy không bị đẩy ra ngoài trên màn vuông.")]
+        [SerializeField] float minHalfHeight = 8f;
+
         [Header("Thành phần scene")]
         [SerializeField] Camera view;
         [SerializeField] AimController aim;
@@ -108,6 +116,15 @@ namespace Dev.Scripts.BlastOut.Gameplay
             ammoIndex = 0;
             flying.Clear();
             projectiles.DeactivateAll();
+
+            /* Khớp camera theo CHIỀU RỘNG, không phải chiều cao. orthographicSize là nửa chiều cao,
+               nên để nguyên một giá trị thì màn càng dài khung nhìn càng HẸP: 9:16 cho 4.5 unit mỗi
+               bên, còn 9:21 chỉ còn 3.43 — bố cục level tràn ra ngoài và người chơi không thấy mục
+               tiêu. Máy Android phổ biến hiện nay đều dài hơn 9:16.
+
+               Vẫn giữ sàn chiều cao: trên màn vuông (tablet) mà chỉ khớp bề ngang thì khung nhìn lùn
+               lại và vùng thu ở đáy bị đẩy ra ngoài. */
+            view.orthographicSize = Mathf.Max(minHalfHeight, requiredHalfWidth / view.aspect);
 
             var halfHeight = view.orthographicSize;
             var halfWidth = halfHeight * view.aspect;

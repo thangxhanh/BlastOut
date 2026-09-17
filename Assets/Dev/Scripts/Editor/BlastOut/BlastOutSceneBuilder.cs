@@ -329,6 +329,10 @@ namespace Dev.Scripts.Editor.BlastOut
             var controller = go.AddComponent<BlastGameController>();
 
             new SerializedFieldWriter(controller)
+                /* Khung nhìn khớp theo bề ngang: mọi bố cục level phải nằm gọn trong 4.9 unit mỗi
+                   bên, và camera tự nới chiều cao trên màn dài để bề ngang đó luôn đủ. */
+                .Float("requiredHalfWidth", 4.9f)
+                .Float("minHalfHeight", 8f)
                 .Ref("levelSet", levelSet)
                 .Ref("tuning", tuning)
                 .Ref("view", camera)
