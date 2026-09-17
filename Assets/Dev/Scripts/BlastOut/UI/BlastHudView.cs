@@ -96,7 +96,7 @@ namespace Dev.Scripts.BlastOut.UI
                     break;
                 case BlastPhase.Lost:
                     ShowResult(lostReason == LostReason.ForbiddenHit
-                        ? "YOU HIT THE BLUE ONE"
+                        ? "YOU HIT THE GREEN ONE"
                         : "OUT OF AMMO", "RETRY", lostColor);
                     break;
                 default:

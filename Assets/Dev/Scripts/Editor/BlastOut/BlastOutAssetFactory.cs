@@ -21,6 +21,11 @@ namespace Dev.Scripts.Editor.BlastOut
         public static readonly Color BlockColor = Color.white;
         public static readonly Color BarrelColor = Color.white;
         public static readonly Color PlatformColor = Color.white;
+
+        /* Mục tiêu cấm phải KHÁC HẲN mọi thứ khác trên màn: khối là nâu gỗ, thùng nổ là đỏ. Xanh lá
+           chói kiểu độc/virus không trùng với thứ gì, và bản thân màu đó đã nói "đừng chạm".
+           Sprite gốc hơi ngả xanh dương nên hệ số lục phải kéo lên hết mức mới ra đúng sắc. */
+        public static readonly Color ForbiddenColor = new Color(0.35f, 1f, 0.25f, 1f);
         public static readonly Color ShellColor = new Color32(0xE4, 0xF4, 0xFA, 0xFF);
         public static readonly Color DotColor = new Color32(0x8F, 0xDC, 0xEA, 0xFF);
         public static readonly Color SkyColor = new Color32(0x0B, 0x12, 0x24, 0xFF);

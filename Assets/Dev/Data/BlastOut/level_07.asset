@@ -20,7 +20,7 @@ MonoBehaviour:
   lateTick: 0
   fixedTick: 0
   displayNumber: 7
-  hint: DON'T BLAST THE BLUE ONE
+  hint: DON'T BLAST THE GREEN ONE
   launcherPosition: {x: -3.4, y: -5}
   launcherPlatformIndex: -1
   collectZoneTopY: -6.4
@@ -34,7 +34,7 @@ MonoBehaviour:
       speed: 0
       phase: 0
   blocks:
-  - Position: {x: 2.9, y: -0.02000004}
+  - Position: {x: 3.2, y: -0.02000004}
   barrels: []
   forbidden:
-  - Position: {x: 0.7, y: 0.059999973}
+  - Position: {x: 0.2, y: 0.059999973}

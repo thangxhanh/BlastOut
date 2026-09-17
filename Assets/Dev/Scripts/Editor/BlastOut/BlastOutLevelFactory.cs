@@ -164,12 +164,19 @@ namespace Dev.Scripts.Editor.BlastOut
         /* Level 7 — mục tiêu cấm. Lần đầu tiên sức mạnh trở thành RỦI RO: khối cần hạ nằm ngay
            cạnh thứ không được chạm, mà bán kính nổ thì phủ cả hai nếu bắn vào giữa.
 
-           Khoảng cách khối ↔ mục tiêu cấm (2.2) lớn hơn BlastRadius (1.9) đúng một chút: có một
-           đường bắn đúng, nhưng phải nổ ở PHÍA NGOÀI của khối chứ không phải giữa hai vật. Đây là
-           level đầu tiên mà "nổ càng gần càng tốt" là sai. */
+           Khoảng cách khối ↔ mục tiêu cấm (3.0) lớn hơn hẳn BlastRadius (1.9), và khối nằm sát mép
+           phải nên chỉ cần đẩy nhẹ là rơi. Đây là level đầu tiên mà "nổ càng gần càng tốt" là sai.
+
+           Cửa sổ nổ hợp lệ bị kẹp giữa HAI ràng buộc ngược nhau, và phải kiểm lại bằng số mỗi khi
+           đổi bố cục:
+             cận dưới — xa mục tiêu cấm hơn BlastRadius, tức x > 0.2 + 1.9 = 2.1;
+             cận trên — cách khối ít nhất 0.25 (dưới ngưỡng đó TargetBlock hất THẲNG LÊN thay vì
+               sang ngang, khối rơi lại đúng chỗ cũ), tức x < 3.2 - 0.25 = 2.95.
+           Bản đầu tiên để khối ở 2.9 và mục tiêu cấm ở 0.7: hai cận chồng lên nhau chỉ còn 0.05
+           unit — level trông hợp lý nhưng không ai thắng được. */
         static BlastLevelConfig Level07()
         {
-            var level = Begin(7, "DON'T BLAST THE BLUE ONE", new Vector2(-3.4f, -5f));
+            var level = Begin(7, "DON'T BLAST THE GREEN ONE", new Vector2(-3.4f, -5f));
             var w = new SerializedFieldWriter(level);
 
             Ammo(w, AmmoType.Bomb, AmmoType.Bomb);
@@ -177,11 +184,11 @@ namespace Dev.Scripts.Editor.BlastOut
             Platform(platforms, 0, new Vector2(1.4f, -0.6f), 4.6f);
 
             var blocks = w.ArrayOf("blocks", 1);
-            Block(blocks, 0, 2.9f, -0.6f);
+            Block(blocks, 0, 3.2f, -0.6f);
 
             w.ArrayOf("barrels", 0);
 
-            Forbidden(w.ArrayOf("forbidden", 1), 0, 0.7f, -0.6f);
+            Forbidden(w.ArrayOf("forbidden", 1), 0, 0.2f, -0.6f);
             return End(level, w);
         }
 

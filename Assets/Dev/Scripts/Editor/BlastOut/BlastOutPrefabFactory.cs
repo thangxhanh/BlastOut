@@ -122,7 +122,7 @@ namespace Dev.Scripts.Editor.BlastOut
            người chơi tính đường — một mục tiêu cấm bị đẩy trôi thì không ai tính trước được gì. */
         public static ForbiddenTarget CreateForbidden(Sprite sprite)
         {
-            var go = NewSprite("forbidden_target", sprite, Color.white, 3);
+            var go = NewSprite("forbidden_target", sprite, BlastOutAssetFactory.ForbiddenColor, 3);
 
             var circle = go.AddComponent<CircleCollider2D>();
             circle.radius = 0.5f;
