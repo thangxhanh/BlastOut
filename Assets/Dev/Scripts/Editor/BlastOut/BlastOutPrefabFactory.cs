@@ -111,6 +111,7 @@ namespace Dev.Scripts.Editor.BlastOut
                 .Ref("body", body)
                 .Ref("tuning", tuning)
                 .Ref("view", go.GetComponent<SpriteRenderer>())
+                .Float("armedScaleGain", 0.35f)
                 .Apply();
             BindBase(barrel);
 

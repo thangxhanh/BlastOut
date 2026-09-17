@@ -190,3 +190,4 @@ MonoBehaviour:
   tuning: {fileID: 11400000, guid: f8ee599dc8503fe4689b23bf40965c0d, type: 2}
   view: {fileID: 8335377641845329213}
   armedColor: {r: 1, g: 0.95, b: 0.65, a: 1}
+  armedScaleGain: 0.35

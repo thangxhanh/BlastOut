@@ -113,6 +113,49 @@ namespace Dev.Scripts.Editor.BlastOut
             FadeOut(ps);
         }
 
+        /* Mảnh vỡ của thùng. Tách khỏi prefab nổ chung vì chỉ thùng mới có gì để vỡ — đạn nổ giữa
+           không trung mà văng mảnh gỗ thì vô lý.
+
+           Mảnh dùng sprite thật (không additive như lửa) và xoay trong lúc bay, nên đọc ra là "vật
+           thể bị xé" chứ không phải một đốm sáng nữa. */
+        public static ParticleSystem CreateDebris()
+        {
+            var root = new GameObject("debris_vfx");
+
+            var ps = root.AddComponent<ParticleSystem>();
+            var main = ps.main;
+            main.loop = false;
+            main.playOnAwake = false;
+            main.duration = 1f;
+            main.startLifetime = new ParticleSystem.MinMaxCurve(0.5f, 0.9f);
+            main.startSize = new ParticleSystem.MinMaxCurve(0.22f, 0.42f);
+            main.startSpeed = new ParticleSystem.MinMaxCurve(3.5f, 7.5f);
+            main.startRotation = new ParticleSystem.MinMaxCurve(0f, Mathf.PI * 2f);
+            main.startColor = Color.white;
+            main.gravityModifier = 2.2f;
+            main.simulationSpace = ParticleSystemSimulationSpace.World;
+            main.scalingMode = ParticleSystemScalingMode.Hierarchy;
+
+            var emission = ps.emission;
+            emission.rateOverTime = 0f;
+            Burst(ps, 9);
+            Circle(ps);
+
+            /* Xoay trong lúc bay: mảnh gỗ văng ra mà giữ nguyên góc thì trông như sticker trượt. */
+            var rotation = ps.rotationOverLifetime;
+            rotation.enabled = true;
+            rotation.z = new ParticleSystem.MinMaxCurve(-6f, 6f);
+
+            FadeOut(ps);
+
+            var renderer = ps.GetComponent<ParticleSystemRenderer>();
+            renderer.sharedMaterial = LoadOrCreateMaterial("debris_wood.png", additive: false);
+            renderer.sortingOrder = 11;
+            renderer.alignment = ParticleSystemRenderSpace.View;
+
+            return SavePrefab(root).GetComponent<ParticleSystem>();
+        }
+
         static ParticleSystem NewLayer(Transform parent, string name, string spriteFile, Color color,
             int sortingOrder)
         {
@@ -182,7 +225,7 @@ namespace Dev.Scripts.Editor.BlastOut
 
         /* Material là ASSET trên đĩa, nên shader chắc chắn được build tham chiếu tới. Shader.Find chỉ
            an toàn ở đây — gọi lúc chạy thì shader không ai tham chiếu sẽ bị strip và ra màu hồng. */
-        static Material LoadOrCreateMaterial(string spriteFile)
+        static Material LoadOrCreateMaterial(string spriteFile, bool additive = true)
         {
             var name = spriteFile.Replace(".png", string.Empty);
             var path = $"{BlastOutAssetFactory.PrefabFolder}/{name}.mat";
@@ -193,13 +236,18 @@ namespace Dev.Scripts.Editor.BlastOut
             var texture = AssetDatabase.LoadAssetAtPath<Texture2D>($"{VfxFolder}/{spriteFile}");
             if (!texture) Debug.LogError($"[BlastOut] Thiếu texture VFX: {VfxFolder}/{spriteFile}");
 
-            /* Additive: hạt chồng lên nhau thì sáng dồn lên, đúng chất lửa và tia lửa. */
             var material = new Material(Shader.Find("Particles/Standard Unlit"));
             material.SetTexture("_MainTex", texture);
             material.SetFloat("_Mode", 4f);
             material.SetOverrideTag("RenderType", "Transparent");
             material.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.SrcAlpha);
-            material.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.One);
+
+            /* Additive cho lửa và tia sáng: hạt chồng lên nhau thì sáng dồn lên. Mảnh gỗ thì không —
+               vật thể đặc mà cộng sáng sẽ thành đốm phát quang, mất hẳn cảm giác là mảnh vỡ. */
+            material.SetInt("_DstBlend", (int)(additive
+                ? UnityEngine.Rendering.BlendMode.One
+                : UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha));
+
             material.SetInt("_ZWrite", 0);
             material.DisableKeyword("_ALPHATEST_ON");
             material.EnableKeyword("_ALPHABLEND_ON");

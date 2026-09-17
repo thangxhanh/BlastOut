@@ -31,7 +31,7 @@ MonoBehaviour:
   blastTorque: 5
   barrelRadius: 3.2
   barrelForce: 14
-  barrelChainDelay: 0.12
+  barrelChainDelay: 0.16
   settleSpeedThreshold: 0.3
   settleHoldTime: 0.3
   settleTimeout: 2.5

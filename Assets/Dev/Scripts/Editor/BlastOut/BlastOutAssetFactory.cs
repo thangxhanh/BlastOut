@@ -132,7 +132,10 @@ namespace Dev.Scripts.Editor.BlastOut
                    thì thùng dễ bị kích nổ nhờ ăn may bấy nhiêu. */
                 .Float("barrelRadius", 3.2f)
                 .Float("barrelForce", 14f)
-                .Float("barrelChainDelay", 0.12f)
+                /* Quãng đếm ngược trước khi thùng nổ lây. 0.12s là quá ngắn để nhìn ra nhịp nháy
+                   (mỗi lần sáng–tối chưa tới 3 frame ở 60fps, thành nhiễu). 0.16s vẫn đủ nhanh để
+                   không làm chậm chuỗi nổ, nhưng đọc được. */
+                .Float("barrelChainDelay", 0.16f)
 
                 .Float("settleSpeedThreshold", 0.3f)
                 .Float("settleHoldTime", 0.3f)

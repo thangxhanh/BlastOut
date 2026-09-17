@@ -124,11 +124,17 @@ namespace Dev.Scripts.BlastOut.Gameplay
 
             builder.Build(level, resolver);
 
-            /* Khối được dựng lại mỗi level nên phải nối lại tiếng va chạm sau mỗi lần Build. */
+            /* Khối và thùng được dựng lại mỗi level nên phải nối lại callback sau mỗi lần Build. */
             if (audioPlayer)
             {
                 var blocks = builder.Blocks;
                 for (var i = 0; i < blocks.Count; i++) blocks[i].BindImpact(audioPlayer.PlayImpact);
+            }
+
+            if (vfx)
+            {
+                var barrels = builder.Barrels;
+                for (var i = 0; i < barrels.Count; i++) barrels[i].BindDebris(vfx.PlayDebris);
             }
 
             /* Pháo có thể đứng trên một bệ đang chạy. Giữ khoảng lệch lúc dựng rồi bám theo mỗi

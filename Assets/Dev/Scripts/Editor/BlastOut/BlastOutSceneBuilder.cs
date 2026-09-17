@@ -55,6 +55,7 @@ namespace Dev.Scripts.Editor.BlastOut
             var projectilePrefab = BlastOutPrefabFactory.CreateProjectile(circle, tuning, trailMaterial);
             var dotPrefab = BlastOutPrefabFactory.CreateDot(circle);
             var vfxPrefab = BlastOutVfxFactory.CreateExplosion();
+            var debrisPrefab = BlastOutVfxFactory.CreateDebris();
 
             AssetDatabase.SaveAssets();
 
@@ -66,7 +67,7 @@ namespace Dev.Scripts.Editor.BlastOut
             var levelRoot = NewChild(containers, "Level");
             var projectileRoot = NewChild(containers, "Projectiles");
 
-            var vfx = BuildVfx(vfxPrefab, containers);
+            var vfx = BuildVfx(vfxPrefab, debrisPrefab, containers);
             var audioPlayer = BuildAudio();
             var impact = BuildImpactFeedback(camera.transform);
             var hud = BuildHud();
@@ -212,7 +213,7 @@ namespace Dev.Scripts.Editor.BlastOut
             return feedback;
         }
 
-        static BlastVfxPlayer BuildVfx(ParticleSystem prefab, Transform parent)
+        static BlastVfxPlayer BuildVfx(ParticleSystem prefab, ParticleSystem debrisPrefab, Transform parent)
         {
             var go = new GameObject("BlastVfx");
             var player = go.AddComponent<BlastVfxPlayer>();
@@ -220,6 +221,7 @@ namespace Dev.Scripts.Editor.BlastOut
 
             new SerializedFieldWriter(player)
                 .Ref("explosionPrefab", prefab)
+                .Ref("debrisPrefab", debrisPrefab)
                 .Ref("container", container)
                 .Int("poolSize", 6)
                 /* Khớp blastRadius trong tuning: prefab dựng theo bán kính này rồi phóng theo tỉ lệ,

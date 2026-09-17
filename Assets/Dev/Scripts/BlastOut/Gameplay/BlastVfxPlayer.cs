@@ -11,6 +11,8 @@ namespace Dev.Scripts.BlastOut.Gameplay
     public class BlastVfxPlayer : BaseMono
     {
         [SerializeField] ParticleSystem explosionPrefab;
+        [Tooltip("Mảnh vỡ, chỉ dùng cho thùng nổ.")]
+        [SerializeField] ParticleSystem debrisPrefab;
         [SerializeField] Transform container;
 
         [Tooltip("Số vụ nổ có thể chồng lên nhau. Dây chuyền dài nhất trong các level hiện tại là 2.")]
@@ -21,18 +23,32 @@ namespace Dev.Scripts.BlastOut.Gameplay
         [SerializeField] float referenceRadius = 1.9f;
 
         ParticleSystem[] instances;
+        ParticleSystem[] debris;
         int next;
+        int nextDebris;
 
         public override void Initialize()
         {
             base.Initialize();
 
-            instances = new ParticleSystem[Mathf.Max(1, poolSize)];
-            for (var i = 0; i < instances.Length; i++)
+            instances = Spawn(explosionPrefab, Mathf.Max(1, poolSize));
+
+            /* Ít bản hơn vụ nổ: cùng lúc hiếm khi có quá hai thùng phát nổ. */
+            debris = Spawn(debrisPrefab, 3);
+        }
+
+        ParticleSystem[] Spawn(ParticleSystem prefab, int count)
+        {
+            if (!prefab) return null;
+
+            var pool = new ParticleSystem[count];
+            for (var i = 0; i < count; i++)
             {
-                instances[i] = Instantiate(explosionPrefab, container);
-                instances[i].Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+                pool[i] = Instantiate(prefab, container);
+                pool[i].Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
             }
+
+            return pool;
         }
 
         public void PlayExplosion(Vector2 position, float radius)
@@ -47,6 +63,18 @@ namespace Dev.Scripts.BlastOut.Gameplay
             effect.transform.localScale = new Vector3(scale, scale, 1f);
 
             /* withChildren = true: flash, khói, tia lửa và vòng xung kích là các hệ con riêng. */
+            effect.Play(true);
+        }
+
+        /* Chỉ thùng nổ gọi tới — đạn nổ giữa không trung thì không có gì để vỡ. */
+        public void PlayDebris(Vector2 position)
+        {
+            if (debris == null || debris.Length == 0) return;
+
+            var effect = debris[nextDebris];
+            nextDebris = (nextDebris + 1) % debris.Length;
+
+            effect.transform.SetPositionAndRotation(position, Quaternion.identity);
             effect.Play(true);
         }
     }
