@@ -25,6 +25,10 @@ namespace Dev.Scripts.BlastOut.Gameplay
         const int SplitCount = 3;
         const float SplitSpreadDegrees = 26f;
 
+        /* Lớn hơn bán kính collider của đạn (0.18 sau khi scale), để ba mảnh rời nhau ngay từ frame
+           đầu thay vì chồng lên nhau rồi mới toả ra. */
+        const float SplitSpawnOffset = 0.3f;
+
         BlastResolver resolver;
         Action<BlastProjectile> despawned;
         Action<Vector2, Vector2> splitRequested;
@@ -121,12 +125,21 @@ namespace Dev.Scripts.BlastOut.Gameplay
                 var offset = (i - (SplitCount - 1) * 0.5f) * SplitSpreadDegrees;
                 var radians = (baseAngle + offset) * Mathf.Deg2Rad;
                 var direction = new Vector2(Mathf.Cos(radians), Mathf.Sin(radians));
-                splitRequested?.Invoke(origin, direction * speed);
+
+                /* Đẩy mỗi mảnh ra trước một đoạn theo hướng của nó. Sinh cả ba đúng một điểm thì
+                   khoảnh khắc đầu tiên chúng chồng lên nhau, nhìn ra một chấm chứ không ra chùm
+                   ba tia — cú tách chỉ "đọc" được nếu thấy chúng rời nhau ngay lúc tách. */
+                splitRequested?.Invoke(origin + direction * SplitSpawnOffset, direction * speed);
             }
         }
 
         void OnCollisionEnter2D(Collision2D collision)
         {
+            /* Đạn KHÔNG kích nổ đạn. Ba mảnh của Splitter sinh ra sát nhau nên chạm nhau ngay frame
+               đầu tiên; tính đó là va chạm thì cả ba nổ tức thì và người chơi chẳng bao giờ thấy
+               cú tách — chỉ thấy một vụ nổ ngay chỗ vừa chạm màn hình. */
+            if (collision.collider.TryGetComponent<BlastProjectile>(out _)) return;
+
             /* Chạm đất/bệ mà chưa kích nổ thì vẫn nổ — người chơi không bao giờ mất lượt vì quên chạm.
                Không phát tiếng va chạm ở đây: vụ nổ xảy ra ngay lập tức và tiếng nổ đã che mất. */
             Detonate();
