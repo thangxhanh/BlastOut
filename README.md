@@ -21,7 +21,7 @@ Vòng chơi một lượt:
 
 Cố ý **không có hệ thống máu, không có khối vỡ vụn**. Khối chỉ bị đẩy. Nhờ vậy vật lý *đọc được*: người chơi nhìn là đoán được lực sẽ đẩy khối đi đâu, và mọi thất bại đều tự giải thích được.
 
-7 level, mỗi màn thêm **đúng một** thứ mới buộc người chơi nghĩ khác đi:
+9 level. Bảy màn đầu mỗi màn thêm **đúng một** thứ mới buộc người chơi nghĩ khác đi:
 
 | # | Thứ mới | Quyết định mà nó tạo ra |
 |---|---|---|
@@ -32,6 +32,13 @@ Cố ý **không có hệ thống máu, không có khối vỡ vụn**. Khối c
 | 5 | pháo đứng trên bệ chạy | chính điểm bắn cũng di động → phải chọn **đứng đâu thì bắn** |
 | 6 | đạn tách ba + bệ chạy vòng | tách sớm thì chùm toả quá rộng, tách muộn thì không với tới |
 | 7 | mục tiêu **cấm** chạm | lần đầu "nổ càng gần càng tốt" là **sai** → phải né bán kính của chính mình |
+
+Hai màn cuối không dạy gì mới — chúng bắt dùng **hai thứ đã học cùng lúc**, và chỉ ở đó người chơi mới phải cân nhắc đánh đổi thay vì áp dụng một quy tắc:
+
+| # | Kết hợp | Quyết định |
+|---|---|---|
+| 8 | bệ chạy + mục tiêu cấm | khối đi qua đi lại, có lúc ở gần thứ không được chạm → không chỉ cần *thời điểm đúng* mà phải là *thời điểm an toàn* |
+| 9 | thùng dây chuyền + mục tiêu cấm | hai thùng nhìn y hệt nhau, **một viên đạn**: thùng nào cũng hạ được khối, nhưng một cái nổ ra là thua |
 
 ---
 

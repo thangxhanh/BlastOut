@@ -36,7 +36,10 @@ namespace Dev.Scripts.BlastOut.Gameplay
 
         public void ApplyBlast(Vector2 origin, float force, float radius)
         {
-            var toBlock = body.position - origin;
+            /* Đo bằng transform, KHÔNG phải body.position: level builder đặt vị trí qua transform,
+               còn Rigidbody2D chỉ chép lại ở bước vật lý kế tiếp — nên ở lượt bắn đầu tiên mọi
+               body.position đều còn là gốc toạ độ, và cú nổ đẩy sai cả hướng lẫn độ mạnh. */
+            var toBlock = (Vector2)transform.position - origin;
             var distance = toBlock.magnitude;
             if (distance > radius) return;
 

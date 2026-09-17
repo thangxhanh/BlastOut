@@ -12,6 +12,11 @@ namespace Dev.Scripts.Editor.BlastOut
          1. kéo–thả                  2. kích nổ giữa không trung
          3. bệ chạy ngang (canh giờ) 4. thùng nổ dây chuyền
          5. chính khẩu pháo chạy     6. đạn tách + bệ chạy vòng
+         7. mục tiêu cấm chạm
+
+       Hai màn cuối KHÔNG dạy gì mới — chúng bắt dùng hai thứ đã học cùng lúc, và chỉ ở đó người
+       chơi mới phải cân nhắc đánh đổi thay vì áp dụng một quy tắc:
+         8. bệ chạy + mục tiêu cấm   9. thùng dây chuyền + mục tiêu cấm
 
        Khung nhìn: camera orthographicSize 8, tỉ lệ dọc 9:16 ⇒ x ∈ [-4.5, 4.5], y ∈ [-8, 8]. */
     public static class BlastOutLevelFactory
@@ -21,12 +26,14 @@ namespace Dev.Scripts.Editor.BlastOut
         const float PlatformHalfThickness = 0.16f;
         const float BlockHalfHeight = 0.42f;
         const float BarrelHalfHeight = 0.45f;
+        const float ForbiddenHalfHeight = 0.5f;
 
         public static BlastLevelConfig[] CreateAll()
         {
             return new[]
             {
-                Level01(), Level02(), Level03(), Level04(), Level05(), Level06(), Level07()
+                Level01(), Level02(), Level03(), Level04(), Level05(), Level06(), Level07(),
+                Level08(), Level09()
             };
         }
 
@@ -174,12 +181,70 @@ namespace Dev.Scripts.Editor.BlastOut
 
             w.ArrayOf("barrels", 0);
 
-            var forbidden = w.ArrayOf("forbidden", 1);
-            if (forbidden != null)
-            {
-                forbidden.GetArrayElementAtIndex(0).FindPropertyRelative("Position").vector2Value =
-                    new Vector2(0.7f, -0.6f + PlatformHalfThickness + 0.5f);
-            }
+            Forbidden(w.ArrayOf("forbidden", 1), 0, 0.7f, -0.6f);
+            return End(level, w);
+        }
+
+        /* Level 8 — TỔNG HỢP: bệ chạy (L3) gặp mục tiêu cấm (L7).
+
+           Khối đi qua đi lại, và có lúc nó ở gần mục tiêu cấm tới mức không thể bắn. Đường ngắm
+           đúng không còn đủ, thời điểm đúng cũng không còn đủ — phải là thời điểm AN TOÀN.
+           Bệ chạy trong khoảng x ∈ [-0.9, 2.5]; mục tiêu cấm đứng yên ở 3.6, nên càng về bên phải
+           thì cửa sổ bắn càng hẹp lại. */
+        static BlastLevelConfig Level08()
+        {
+            var level = Begin(8, "WAIT FOR THE SAFE MOMENT", new Vector2(-3.4f, -5f));
+            var w = new SerializedFieldWriter(level);
+
+            Ammo(w, AmmoType.Bomb, AmmoType.Bomb);
+            var platforms = w.ArrayOf("platforms", 2);
+            Platform(platforms, 0, new Vector2(0.8f, -0.6f), 2.6f, MotionKind.Horizontal, 1.7f, 0.13f);
+            Platform(platforms, 1, new Vector2(3.6f, -0.6f), 1.4f);
+
+            Block(w.ArrayOf("blocks", 1), 0, 0.8f, -0.6f);
+            w.ArrayOf("barrels", 0);
+            Forbidden(w.ArrayOf("forbidden", 1), 0, 3.6f, -0.6f);
+
+            return End(level, w);
+        }
+
+        /* Level 9 — TỔNG HỢP: thùng nổ dây chuyền (L4) gặp mục tiêu cấm (L7).
+
+           Hai thùng nổ, nhìn y hệt nhau. Thùng trái hạ được cả hai khối và ở đủ xa mục tiêu cấm;
+           thùng phải thì bán kính của nó trùm luôn mục tiêu cấm — bắn nhầm là thua ngay.
+
+           Ba số liệu phải đồng thời đúng, nếu không quyết định biến mất:
+             hai thùng cách nhau 3.6 > BarrelRadius 3.2 ⇒ thùng trái KHÔNG kích nổ thùng phải,
+               nếu kích thì mọi đường bắn đều dẫn tới cùng một kết cục. Chừa hẳn một khoảng dư
+               thay vì bám sát ngưỡng: thùng là vật thể động, chỉ cần nhích vài phần mười là
+               dây chuyền xảy ra ngoài ý muốn;
+             MỘT viên đạn ⇒ không thể bỏ qua thùng mà bắn thẳng từng khối. Thử với hai viên thì
+               người chơi giải xong mà chẳng cần nhìn tới cái thùng nào;
+             bệ đủ ngắn ⇒ vụ nổ của thùng trái hất được CẢ HAI khối ra khỏi mép. Bệ rộng quá thì
+               khối xa chỉ trượt một đoạn rồi nằm lại, và level thành không thể thắng. */
+        static BlastLevelConfig Level09()
+        {
+            var level = Begin(9, "ONE SHOT - PICK THE RIGHT BARREL", new Vector2(-3.4f, -5f));
+            var w = new SerializedFieldWriter(level);
+
+            Ammo(w, AmmoType.Bomb);
+            var platforms = w.ArrayOf("platforms", 2);
+            Platform(platforms, 0, new Vector2(0f, -0.8f), 5f);
+
+            /* Bệ của mục tiêu cấm phải nằm CAO hơn hẳn bệ chính. Để ngang nhau thì khối bị hất sang
+               phải đáp luôn lên nó và nằm lại đó — không rơi xuống được, mà chỉ có một viên đạn,
+               nên level thành không thể thắng. */
+            Platform(platforms, 1, new Vector2(3.6f, 1f), 1.4f);
+
+            var blocks = w.ArrayOf("blocks", 2);
+            Block(blocks, 0, -1.8f, -0.8f);
+            Block(blocks, 1, 0.4f, -0.8f);
+
+            var barrels = w.ArrayOf("barrels", 2);
+            Barrel(barrels, 0, -1.2f, -0.8f);
+            Barrel(barrels, 1, 2.4f, -0.8f);
+
+            Forbidden(w.ArrayOf("forbidden", 1), 0, 3.6f, 1f);
 
             return End(level, w);
         }
@@ -258,6 +323,13 @@ namespace Dev.Scripts.Editor.BlastOut
             if (array == null) return;
             array.GetArrayElementAtIndex(index).FindPropertyRelative("Position").vector2Value =
                 new Vector2(x, platformCenterY + PlatformHalfThickness + BarrelHalfHeight);
+        }
+
+        static void Forbidden(SerializedProperty array, int index, float x, float platformCenterY)
+        {
+            if (array == null) return;
+            array.GetArrayElementAtIndex(index).FindPropertyRelative("Position").vector2Value =
+                new Vector2(x, platformCenterY + PlatformHalfThickness + ForbiddenHalfHeight);
         }
     }
 }

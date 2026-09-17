@@ -1,0 +1,50 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2c6d8425d7aa25244882298326ff4777, type: 3}
+  m_Name: level_09
+  m_EditorClassIdentifier: Dev.Runtime::Dev.Scripts.BlastOut.Config.BlastLevelConfig
+  id: 
+  pools: {fileID: 11400000, guid: 866f23a3800914ad285dc839fa4da6d2, type: 2}
+  ticker: {fileID: 11400000, guid: b1259f9e47f5d476cbfd3237af191b98, type: 2}
+  earlyTick: 0
+  tick: 0
+  lateTick: 0
+  fixedTick: 0
+  displayNumber: 9
+  hint: ONE SHOT - PICK THE RIGHT BARREL
+  launcherPosition: {x: -3.4, y: -5}
+  launcherPlatformIndex: -1
+  collectZoneTopY: -6.4
+  ammo: 00000000
+  platforms:
+  - Center: {x: 0, y: -0.8}
+    Width: 5
+    Motion:
+      kind: 0
+      distance: 0
+      speed: 0
+      phase: 0
+  - Center: {x: 3.6, y: 1}
+    Width: 1.4
+    Motion:
+      kind: 0
+      distance: 0
+      speed: 0
+      phase: 0
+  blocks:
+  - Position: {x: -1.8, y: -0.22000003}
+  - Position: {x: 0.4, y: -0.22000003}
+  barrels:
+  - Position: {x: -1.2, y: -0.19000003}
+  - Position: {x: 2.4, y: -0.19000003}
+  forbidden:
+  - Position: {x: 3.6, y: 1.66}

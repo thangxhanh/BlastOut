@@ -47,7 +47,10 @@ namespace Dev.Scripts.BlastOut.Gameplay
             /* Cờ này là thứ duy nhất chặn đệ quy vô hạn khi hai thùng nằm trong bán kính của nhau. */
             if (triggered) return;
 
-            var distance = Vector2.Distance(body.position, origin);
+            /* Đo bằng transform, KHÔNG phải body.position: level builder đặt vị trí qua transform,
+               còn Rigidbody2D chỉ chép lại ở bước vật lý kế tiếp — nên ở lượt bắn đầu tiên mọi
+               body.position đều còn là gốc toạ độ, và vụ nổ "với tới" những thứ ở rất xa. */
+            var distance = Vector2.Distance((Vector2)transform.position, origin);
             if (distance > radius) return;
 
             triggered = true;
@@ -59,6 +62,14 @@ namespace Dev.Scripts.BlastOut.Gameplay
            mắt đang nhìn chỗ khác trên màn hình. */
         IEnumerator DetonateAfterDelay()
         {
+            /* Ghim thùng lại ngay khi bị kích. Chính vụ nổ vừa kích nó cũng ĐẨY nó, nên nếu để trôi
+               thì nó nổ ở một chỗ khác với chỗ người chơi nhắm — đủ để một dây chuyền lẽ ra không
+               xảy ra lại xảy ra. Bố cục level dựa trên khoảng cách giữa các thùng, mà khoảng cách
+               đó chỉ có nghĩa khi thùng đứng yên. */
+            body.linearVelocity = Vector2.zero;
+            body.angularVelocity = 0f;
+            body.bodyType = RigidbodyType2D.Kinematic;
+
             var duration = Mathf.Max(0.01f, tuning.BarrelChainDelay);
             var baseScale = transform.localScale;
             var baseColor = view ? view.color : Color.white;
@@ -78,7 +89,7 @@ namespace Dev.Scripts.BlastOut.Gameplay
                 yield return null;
             }
 
-            var origin = body.position;
+            var origin = (Vector2)transform.position;
             gameObject.SetActive(false);
 
             /* Nổ SAU khi tự tắt: nếu còn bật, chính nó cũng nằm trong vùng quét và bị đẩy vô ích. */

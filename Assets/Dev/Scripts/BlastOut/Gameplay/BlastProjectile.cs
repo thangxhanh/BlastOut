@@ -27,7 +27,10 @@ namespace Dev.Scripts.BlastOut.Gameplay
         float aliveTime;
 
         public bool Consumed => consumed;
-        public Vector2 Position => body.position;
+        /* transform chứ không phải body.position: đạn vừa được pool đặt vị trí qua transform, còn
+           Rigidbody2D phải tới bước vật lý kế tiếp mới chép lại. Kích nổ ngay frame đầu mà lấy
+           body.position thì vụ nổ xảy ra ở gốc toạ độ chứ không phải chỗ viên đạn đang bay. */
+        public Vector2 Position => transform.position;
 
         /* Biến mất mà KHÔNG nổ — dùng khi đạn đã bay khỏi vùng chơi. Nổ ở ngoài màn thì người chơi
            không thấy gì, chỉ thấy game đứng im chờ, nên coi như cú bắn đã hỏng và kết thúc luôn. */
@@ -77,7 +80,7 @@ namespace Dev.Scripts.BlastOut.Gameplay
             if (consumed) return;
             consumed = true;
 
-            var origin = body.position;
+            var origin = Position;
 
             if (canSplit)
             {
