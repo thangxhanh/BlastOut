@@ -79,10 +79,16 @@ namespace Dev.Scripts.BlastOut.UI
             if (resultRoot) resultRoot.SetActive(false);
         }
 
-        public void ShowAmmo(int remaining, int total)
+        /* Loại đạn phải hiện TRƯỚC khi bắn, không phải lúc đạn đã bay: cú tách chỉ đáng giá nếu
+           người chơi biết mình sắp cầm viên tách được mà chọn đường ngắm cho phù hợp. */
+        public void ShowAmmo(int remaining, int total, AmmoType next)
         {
             if (!ammoLabel) return;
-            ammoLabel.text = $"AMMO {remaining}/{total}";
+
+            var kind = next == AmmoType.Splitter ? "SPLIT" : "BOMB";
+            ammoLabel.text = remaining > 0
+                ? $"{kind}  {remaining}/{total}"
+                : $"AMMO {remaining}/{total}";
         }
 
         public void ShowPhase(BlastPhase phase)

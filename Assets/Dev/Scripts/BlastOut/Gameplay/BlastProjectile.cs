@@ -14,6 +14,13 @@ namespace Dev.Scripts.BlastOut.Gameplay
         [SerializeField] Rigidbody2D body;
         [SerializeField] BlastTuning tuning;
         [SerializeField] TrailRenderer trail;
+        [SerializeField] SpriteRenderer view;
+
+        /* Hai loại đạn hành xử khác hẳn nhau nhưng dùng chung một prefab, nên màu là thứ DUY NHẤT
+           cho người chơi biết mình đang cầm viên gì. Giống hệt nhau thì mechanic tách đạn coi như
+           vô hình: không ai canh được cú tách nếu không biết viên này tách được. */
+        [SerializeField] Color bombTint = new Color(0.89f, 0.96f, 0.98f);
+        [SerializeField] Color splitterTint = new Color(0.78f, 0.48f, 1f);
 
         const int SplitCount = 3;
         const float SplitSpreadDegrees = 26f;
@@ -21,7 +28,6 @@ namespace Dev.Scripts.BlastOut.Gameplay
         BlastResolver resolver;
         Action<BlastProjectile> despawned;
         Action<Vector2, Vector2> splitRequested;
-        AmmoType ammoType;
         bool canSplit;
         bool consumed;
         float aliveTime;
@@ -44,7 +50,6 @@ namespace Dev.Scripts.BlastOut.Gameplay
         public void Launch(Vector2 velocity, AmmoType type, BlastResolver blastResolver,
             Action<BlastProjectile> onDespawned, Action<Vector2, Vector2> onSplitRequested)
         {
-            ammoType = type;
             resolver = blastResolver;
             despawned = onDespawned;
             splitRequested = onSplitRequested;
@@ -58,8 +63,15 @@ namespace Dev.Scripts.BlastOut.Gameplay
             body.linearVelocity = velocity;
             body.angularVelocity = 0f;
 
+            var tint = canSplit ? splitterTint : bombTint;
+            if (view) view.color = tint;
+
             if (trail)
             {
+                /* Vệt đạn cũng đổi màu theo: lúc đạn đang bay nhanh thì vệt còn dễ thấy hơn cả đạn. */
+                trail.startColor = tint;
+                trail.endColor = new Color(tint.r, tint.g, tint.b, 0f);
+
                 trail.Clear();
                 trail.emitting = true;
             }

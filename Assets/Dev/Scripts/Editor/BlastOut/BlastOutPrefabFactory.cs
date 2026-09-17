@@ -163,6 +163,9 @@ namespace Dev.Scripts.Editor.BlastOut
                 .Ref("body", body)
                 .Ref("tuning", tuning)
                 .Ref("trail", trail)
+                .Ref("view", go.GetComponent<SpriteRenderer>())
+                .Tint("bombTint", BlastOutAssetFactory.ShellColor)
+                .Tint("splitterTint", BlastOutAssetFactory.SplitterColor)
                 .Apply();
             BindBase(projectile);
 

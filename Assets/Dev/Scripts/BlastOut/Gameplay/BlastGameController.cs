@@ -287,6 +287,10 @@ namespace Dev.Scripts.BlastOut.Gameplay
             var type = level.Ammo[Mathf.Min(ammoIndex, level.Ammo.Length - 1)];
             ammoIndex++;
 
+            /* Vẽ lại HUD SAU khi ammoIndex đã nhích: sự kiện AmmoChanged phát ra từ trong TryFire,
+               lúc đó index vẫn trỏ vào viên vừa bắn nên nhãn loại đạn trễ đúng một nhịp. */
+            hud.ShowAmmo(session.AmmoRemaining, level.AmmoCount, NextAmmoType());
+
             if (audioPlayer) audioPlayer.PlayShoot();
             Spawn(aim.MuzzlePosition, velocity, type);
         }
@@ -348,7 +352,15 @@ namespace Dev.Scripts.BlastOut.Gameplay
 
         void OnAmmoChanged(int remaining)
         {
-            hud.ShowAmmo(remaining, level.AmmoCount);
+            hud.ShowAmmo(remaining, level.AmmoCount, NextAmmoType());
+        }
+
+        /* Loại của viên SẮP bắn. ammoIndex đã trỏ sang viên kế tiếp ngay sau khi bắn, nên chỉ cần
+           kẹp lại trong mảng — level khai báo ít đạn hơn số lượt thì viên cuối được dùng lại. */
+        AmmoType NextAmmoType()
+        {
+            if (level.Ammo == null || level.Ammo.Length == 0) return AmmoType.Bomb;
+            return level.Ammo[Mathf.Clamp(ammoIndex, 0, level.Ammo.Length - 1)];
         }
     }
 }

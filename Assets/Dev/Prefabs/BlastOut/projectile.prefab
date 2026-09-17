@@ -299,3 +299,6 @@ MonoBehaviour:
   body: {fileID: 2469839487198372029}
   tuning: {fileID: 11400000, guid: f8ee599dc8503fe4689b23bf40965c0d, type: 2}
   trail: {fileID: 6157443986203830333}
+  view: {fileID: 2727340899790075486}
+  bombTint: {r: 0.89411765, g: 0.95686275, b: 0.98039216, a: 1}
+  splitterTint: {r: 0.78039217, g: 0.48235294, b: 1, a: 1}
