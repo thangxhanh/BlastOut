@@ -275,16 +275,17 @@ namespace Dev.Scripts.Editor.BlastOut
         {
             var aim = launcher.AddComponent<AimController>();
 
-            /* Lấy cả thân lẫn nòng để làm mờ cùng lúc — mờ mỗi một phần thì nhìn như lỗi hiển thị. */
-            var parts = launcher.GetComponentsInChildren<SpriteRenderer>();
+            /* Chỉ lấy renderer nằm dưới pivot nòng, bỏ phần thân: nòng đỏ lên đọc ra "vừa bắn, còn
+               nóng", còn cả khẩu đổi màu thì thành báo lỗi giao diện. */
+            var barrelParts = barrelPivot.GetComponentsInChildren<SpriteRenderer>();
 
             new SerializedFieldWriter(aim)
                 .Ref("muzzle", muzzle)
                 .Ref("barrelPivot", barrelPivot)
                 .Ref("preview", preview)
                 .Ref("tuning", tuning)
-                .Refs("launcherParts", parts)
-                .Tint("busyTint", new Color(1f, 1f, 1f, 0.4f))
+                .Refs("barrelParts", barrelParts)
+                .Tint("busyTint", new Color(1f, 0.38f, 0.32f, 1f))
                 .Apply();
             BlastOutPrefabFactory.BindBase(aim);
 

@@ -15,12 +15,14 @@ namespace Dev.Scripts.BlastOut.Gameplay
         [SerializeField] TrajectoryPreview preview;
         [SerializeField] BlastTuning tuning;
 
-        [Tooltip("Thân và nòng pháo. Mờ đi khi chưa bắn được.")]
-        [SerializeField] SpriteRenderer[] launcherParts;
+        [Tooltip("Chỉ NÒNG pháo, không lấy thân. Nòng là chỗ đạn vừa rời đi nên nó đỏ lên mới có " +
+                 "nghĩa; cả khẩu đổi màu thì thành báo lỗi giao diện chứ không ra 'súng đang nóng'.")]
+        [SerializeField] SpriteRenderer[] barrelParts;
 
-        [Tooltip("Màu lúc chưa bắn được. Dòng chữ dưới đáy màn dễ bị bỏ qua vì mắt đang dán vào " +
-                 "khẩu pháo và mục tiêu — làm mờ chính khẩu pháo thì không cần đọc cũng biết.")]
-        [SerializeField] Color busyTint = new Color(1f, 1f, 1f, 0.4f);
+        [Tooltip("Màu nòng lúc chưa bắn được. Đỏ vì nó NÓI RA LÝ DO — vừa bắn xong, nòng còn nóng — " +
+                 "chứ không chỉ báo 'đang khoá'. Dòng chữ dưới đáy màn dễ bị bỏ qua vì mắt đang dán " +
+                 "vào pháo và mục tiêu.")]
+        [SerializeField] Color busyTint = new Color(1f, 0.38f, 0.32f, 1f);
 
         /* Bắn ra vận tốc ban đầu; ai nghe thì tự quyết làm gì với nó. */
         public event Action<Vector2> Fired;
@@ -129,12 +131,12 @@ namespace Dev.Scripts.BlastOut.Gameplay
             if (ready == value) return;
             ready = value;
 
-            if (launcherParts == null) return;
+            if (barrelParts == null) return;
 
             var tint = value ? Color.white : busyTint;
-            for (var i = 0; i < launcherParts.Length; i++)
+            for (var i = 0; i < barrelParts.Length; i++)
             {
-                if (launcherParts[i]) launcherParts[i].color = tint;
+                if (barrelParts[i]) barrelParts[i].color = tint;
             }
         }
 
