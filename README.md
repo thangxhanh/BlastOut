@@ -21,7 +21,7 @@ Vòng chơi một lượt:
 
 Cố ý **không có hệ thống máu, không có khối vỡ vụn**. Khối chỉ bị đẩy. Nhờ vậy vật lý *đọc được*: người chơi nhìn là đoán được lực sẽ đẩy khối đi đâu, và mọi thất bại đều tự giải thích được.
 
-6 level, mỗi màn thêm **đúng một** thứ mới buộc người chơi nghĩ khác đi:
+7 level, mỗi màn thêm **đúng một** thứ mới buộc người chơi nghĩ khác đi:
 
 | # | Thứ mới | Quyết định mà nó tạo ra |
 |---|---|---|
@@ -31,17 +31,19 @@ Cố ý **không có hệ thống máu, không có khối vỡ vụn**. Khối c
 | 4 | thùng nổ dây chuyền | **1 viên, 2 khối** — bắn thẳng là chắc chắn thua → phải chọn **bắn cái gì** |
 | 5 | pháo đứng trên bệ chạy | chính điểm bắn cũng di động → phải chọn **đứng đâu thì bắn** |
 | 6 | đạn tách ba + bệ chạy vòng | tách sớm thì chùm toả quá rộng, tách muộn thì không với tới |
+| 7 | mục tiêu **cấm** chạm | lần đầu "nổ càng gần càng tốt" là **sai** → phải né bán kính của chính mình |
 
 ---
 
 ## 2. Gameplay additions
 
-Ngoài aim-and-shoot, có **4** yếu tố thay đổi quyết định của người chơi:
+Ngoài aim-and-shoot, có **5** yếu tố thay đổi quyết định của người chơi:
 
 1. **Kích nổ chủ động giữa không trung.** Chạm màn lúc đạn đang bay là nổ ngay tại đó. Đây là quyết định đắt nhất trong game: nổ sớm thì yếu, nổ muộn thì đạn đã chạm đất. Đạn chạm vật thể cũng tự nổ, nên *quên chạm không bao giờ làm mất lượt*.
 2. **Thùng nổ dây chuyền.** Bán kính và lực lớn hơn hẳn đạn thường. Người chơi phải chọn **bắn cái gì trước**, không chỉ bắn vào đâu.
 3. **Đạn tách ba (Splitter).** Lúc kích nổ thì tách thành 3 mảnh bay hình quạt thay vì nổ. Đổi câu hỏi từ "nổ ở đâu" sang "toả ra lúc nào".
 4. **Bệ chuyển động** (ngang / dọc / vòng tròn). Thùng và khối đặt trên được ma sát kéo theo. Khẩu pháo cũng đứng được trên bệ chạy — khi đó *điểm bắn* thay đổi theo thời gian.
+5. **Mục tiêu cấm chạm.** Vụ nổ với tới nó là thua ngay. Đây là đối trọng của tất cả những thứ trên: không có nó thì mọi quyết định đều quy về *"làm sao văng được nhiều nhất"* — **sức mạnh không có mặt trái**. Có nó thì bán kính nổ trở thành một vùng phải **né**, và vòng xung kích vẽ đúng tầm sát thương mới thật sự có ích thay vì chỉ để đẹp.
 
 Thêm loại đạn mới = thêm một nhánh trong `BlastProjectile.Detonate`. Thêm quỹ đạo bệ mới = thêm một nhánh trong `PlatformMotion`. Cả hai đều không đụng tới luật thắng/thua.
 

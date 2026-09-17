@@ -36,3 +36,4 @@ MonoBehaviour:
   blocks:
   - Position: {x: 0.9, y: -0.02000004}
   barrels: []
+  forbidden: []

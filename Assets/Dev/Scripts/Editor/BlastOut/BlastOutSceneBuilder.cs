@@ -52,6 +52,8 @@ namespace Dev.Scripts.Editor.BlastOut
             var movingPlatformPrefab = BlastOutPrefabFactory.CreateMovingPlatform(platformArt);
             var blockPrefab = BlastOutPrefabFactory.CreateBlock(blockArt, tuning);
             var barrelPrefab = BlastOutPrefabFactory.CreateBarrel(barrelArt, tuning);
+            var forbiddenPrefab = BlastOutPrefabFactory.CreateForbidden(
+                BlastOutAssetFactory.LoadKenney("Gameplay/forbidden_target.png"));
             var projectilePrefab = BlastOutPrefabFactory.CreateProjectile(circle, tuning, trailMaterial);
             var dotPrefab = BlastOutPrefabFactory.CreateDot(circle);
             var vfxPrefab = BlastOutVfxFactory.CreateExplosion();
@@ -74,7 +76,7 @@ namespace Dev.Scripts.Editor.BlastOut
             BuildEventSystem();
             var aim = BuildAim(launcher, muzzle, barrelPivot, preview, tuning);
             var builder = BuildLevelBuilder(levelRoot, platformPrefab, movingPlatformPrefab, blockPrefab,
-                barrelPrefab, platformArt);
+                barrelPrefab, forbiddenPrefab, platformArt);
             var controller = BuildController(levelSet, tuning, camera, aim, builder, collectZone, preview,
                 launcher.transform, projectileRoot, projectilePrefab, hud, vfx, audioPlayer, impact);
 
@@ -284,7 +286,7 @@ namespace Dev.Scripts.Editor.BlastOut
 
         static LevelBuilder BuildLevelBuilder(Transform container, Transform platformPrefab,
             MovingPlatform movingPlatformPrefab, TargetBlock blockPrefab, ExplosiveBarrel barrelPrefab,
-            Sprite platformArt)
+            ForbiddenTarget forbiddenPrefab, Sprite platformArt)
         {
             var go = new GameObject("LevelBuilder");
             var builder = go.AddComponent<LevelBuilder>();
@@ -301,6 +303,7 @@ namespace Dev.Scripts.Editor.BlastOut
                 .Ref("movingPlatformPrefab", movingPlatformPrefab)
                 .Ref("blockPrefab", blockPrefab)
                 .Ref("barrelPrefab", barrelPrefab)
+                .Ref("forbiddenPrefab", forbiddenPrefab)
                 .Vec2("platformSpriteSize", spriteSize)
                 .Float("platformThickness", 0.32f)
                 .Apply();

@@ -59,6 +59,15 @@ namespace Dev.Scripts.BlastOut.Core
             if (TargetsRemaining == 0) SetPhase(BlastPhase.Won);
         }
 
+        /* Vụ nổ chạm tới mục tiêu cấm. Thua NGAY, không chờ vật lý lắng như các trường hợp khác:
+           ở đây không còn gì để chờ nữa — kết quả đã được định đoạt ngay khoảnh khắc nổ, và bắt
+           người chơi ngồi nhìn thêm vài giây chỉ làm chậm lần thử lại. */
+        public void OnForbiddenHit()
+        {
+            if (IsOver) return;
+            SetPhase(BlastPhase.Lost);
+        }
+
         /* Vật lý đã đứng yên (hoặc hết giờ chờ) — giờ mới kết luận được thắng/thua.
            Chờ đến lúc này thay vì kết luận ngay khi nổ: một khối còn đang lăn vẫn có thể rơi vào vùng thu. */
         public void OnPhysicsSettled()

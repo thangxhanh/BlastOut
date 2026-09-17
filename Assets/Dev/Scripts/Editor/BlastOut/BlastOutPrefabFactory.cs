@@ -118,6 +118,23 @@ namespace Dev.Scripts.Editor.BlastOut
             return SavePrefab(go).GetComponent<ExplosiveBarrel>();
         }
 
+        /* Mục tiêu cấm. Collider TĨNH (không Rigidbody2D): nó vừa là vật cản vừa là mốc cố định để
+           người chơi tính đường — một mục tiêu cấm bị đẩy trôi thì không ai tính trước được gì. */
+        public static ForbiddenTarget CreateForbidden(Sprite sprite)
+        {
+            var go = NewSprite("forbidden_target", sprite, Color.white, 3);
+
+            var circle = go.AddComponent<CircleCollider2D>();
+            circle.radius = 0.5f;
+            circle.sharedMaterial = GripMaterial();
+
+            var target = go.AddComponent<ForbiddenTarget>();
+            new SerializedFieldWriter(target).Ref("view", go.GetComponent<SpriteRenderer>()).Apply();
+            BindBase(target);
+
+            return SavePrefab(go).GetComponent<ForbiddenTarget>();
+        }
+
         public static BlastProjectile CreateProjectile(Sprite circle, BlastTuning tuning, Material trailMaterial)
         {
             var go = NewSprite("projectile", circle, BlastOutAssetFactory.ShellColor, 4);

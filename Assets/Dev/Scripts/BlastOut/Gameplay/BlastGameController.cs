@@ -137,6 +137,9 @@ namespace Dev.Scripts.BlastOut.Gameplay
                 for (var i = 0; i < barrels.Count; i++) barrels[i].BindDebris(vfx.PlayDebris);
             }
 
+            var forbidden = builder.Forbidden;
+            for (var i = 0; i < forbidden.Count; i++) forbidden[i].BindHit(OnForbiddenHit);
+
             /* Pháo có thể đứng trên một bệ đang chạy. Giữ khoảng lệch lúc dựng rồi bám theo mỗi
                frame, nhờ vậy pháo không bao giờ rời khỏi mặt bệ dù quỹ đạo là đường hay vòng. */
             levelTime = 0f;
@@ -308,6 +311,16 @@ namespace Dev.Scripts.BlastOut.Gameplay
             /* Chỉ khi viên cuối cùng biến mất mới sang Resolving — nếu không, Splitter sẽ chuyển
                phase ngay lúc vừa tách, trong khi 3 mảnh còn đang bay. */
             if (flying.Count == 0) session.OnProjectileSpent();
+        }
+
+        /* Thua vì lý do KHÁC hết đạn, nên HUD phải nói rõ — người chơi vừa bắn trúng thứ không được
+           chạm, mà banner vẫn báo "hết đạn" thì họ sẽ rút sai bài học. */
+        void OnForbiddenHit()
+        {
+            if (session.IsOver) return;
+
+            hud.SetLostReason(BlastHudView.LostReason.ForbiddenHit);
+            session.OnForbiddenHit();
         }
 
         void OnBlockCollected(TargetBlock block)

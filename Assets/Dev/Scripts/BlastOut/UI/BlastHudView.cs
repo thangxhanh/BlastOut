@@ -50,8 +50,24 @@ namespace Dev.Scripts.BlastOut.UI
             if (restartButton) restartButton.onClick.RemoveListener(RaiseRestart);
         }
 
+        public enum LostReason
+        {
+            OutOfAmmo,
+            ForbiddenHit
+        }
+
+        LostReason lostReason;
+
+        /* Controller báo lý do TRƯỚC khi phase đổi sang Lost, để banner nói đúng chuyện vừa xảy ra. */
+        public void SetLostReason(LostReason reason)
+        {
+            lostReason = reason;
+        }
+
         public void ShowLevel(int number, string hint)
         {
+            lostReason = LostReason.OutOfAmmo;
+
             if (levelLabel) levelLabel.text = $"LEVEL {number:00}";
 
             if (hintLabel)
@@ -79,7 +95,9 @@ namespace Dev.Scripts.BlastOut.UI
                     ShowResult("LEVEL CLEAR", "NEXT", wonColor);
                     break;
                 case BlastPhase.Lost:
-                    ShowResult("OUT OF AMMO", "RETRY", lostColor);
+                    ShowResult(lostReason == LostReason.ForbiddenHit
+                        ? "YOU HIT THE BLUE ONE"
+                        : "OUT OF AMMO", "RETRY", lostColor);
                     break;
                 default:
                     if (resultRoot) resultRoot.SetActive(false);

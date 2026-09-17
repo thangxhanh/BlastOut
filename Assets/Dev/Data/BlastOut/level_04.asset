@@ -38,3 +38,4 @@ MonoBehaviour:
   - Position: {x: 3.7, y: -0.22000003}
   barrels:
   - Position: {x: 1.6, y: -0.19000003}
+  forbidden: []

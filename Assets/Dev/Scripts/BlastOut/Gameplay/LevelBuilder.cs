@@ -22,6 +22,7 @@ namespace Dev.Scripts.BlastOut.Gameplay
         [SerializeField] Vector2 platformSpriteSize = Vector2.one;
         [SerializeField] TargetBlock blockPrefab;
         [SerializeField] ExplosiveBarrel barrelPrefab;
+        [SerializeField] ForbiddenTarget forbiddenPrefab;
         [Tooltip("Độ dày bệ. Chiều dài lấy từ level data, nên một prefab bệ dùng cho mọi kích thước.")]
         [SerializeField] float platformThickness = 0.32f;
 
@@ -29,6 +30,7 @@ namespace Dev.Scripts.BlastOut.Gameplay
         readonly List<ExplosiveBarrel> barrels = new List<ExplosiveBarrel>(8);
         readonly List<GameObject> platforms = new List<GameObject>(8);
         readonly List<MovingPlatform> movingPlatforms = new List<MovingPlatform>(4);
+        readonly List<ForbiddenTarget> forbidden = new List<ForbiddenTarget>(4);
 
         /* Transform của từng bệ theo đúng thứ tự khai báo trong level data — controller cần để cho
            khẩu pháo bám theo bệ nó đứng lên. */
@@ -37,6 +39,7 @@ namespace Dev.Scripts.BlastOut.Gameplay
         public IReadOnlyList<TargetBlock> Blocks => blocks;
         public IReadOnlyList<ExplosiveBarrel> Barrels => barrels;
         public IReadOnlyList<MovingPlatform> MovingPlatforms => movingPlatforms;
+        public IReadOnlyList<ForbiddenTarget> Forbidden => forbidden;
 
         public Transform GetPlatformAnchor(int index)
         {
@@ -57,6 +60,20 @@ namespace Dev.Scripts.BlastOut.Gameplay
             BuildPlatforms(config);
             BuildBlocks(config);
             BuildBarrels(config, resolver);
+            BuildForbidden(config);
+        }
+
+        void BuildForbidden(BlastLevelConfig config)
+        {
+            var list = config.Forbidden;
+            if (list == null || !forbiddenPrefab) return;
+
+            for (var i = 0; i < list.Length; i++)
+            {
+                var target = Instantiate(forbiddenPrefab, container);
+                target.transform.position = list[i].Position;
+                forbidden.Add(target);
+            }
         }
 
         void BuildPlatforms(BlastLevelConfig config)
@@ -127,12 +144,15 @@ namespace Dev.Scripts.BlastOut.Gameplay
             for (var i = 0; i < blocks.Count; i++) DestroySpawned(blocks[i] ? blocks[i].gameObject : null);
             for (var i = 0; i < barrels.Count; i++) DestroySpawned(barrels[i] ? barrels[i].gameObject : null);
             for (var i = 0; i < platforms.Count; i++) DestroySpawned(platforms[i]);
+            for (var i = 0; i < forbidden.Count; i++)
+                DestroySpawned(forbidden[i] ? forbidden[i].gameObject : null);
 
             blocks.Clear();
             barrels.Clear();
             platforms.Clear();
             movingPlatforms.Clear();
             platformAnchors.Clear();
+            forbidden.Clear();
         }
 
         static void DestroySpawned(GameObject target)

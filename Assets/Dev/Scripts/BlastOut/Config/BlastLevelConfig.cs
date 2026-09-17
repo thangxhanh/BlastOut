@@ -32,6 +32,12 @@ namespace Dev.Scripts.BlastOut.Config
             public Vector2 Position;
         }
 
+        [Serializable]
+        public struct ForbiddenPlacement
+        {
+            public Vector2 Position;
+        }
+
         [Header("Hiển thị")]
         [SerializeField] int displayNumber = 1;
         [Tooltip("Dòng gợi ý hiện ở đáy màn. Để trống thì không hiện.")]
@@ -52,6 +58,8 @@ namespace Dev.Scripts.BlastOut.Config
         [SerializeField] PlatformPlacement[] platforms;
         [SerializeField] BlockPlacement[] blocks;
         [SerializeField] BarrelPlacement[] barrels;
+        [Tooltip("Mục tiêu cấm: vụ nổ chạm tới là thua ngay.")]
+        [SerializeField] ForbiddenPlacement[] forbidden;
 
         public int DisplayNumber => displayNumber;
         public string Hint => hint;
@@ -62,6 +70,7 @@ namespace Dev.Scripts.BlastOut.Config
         public PlatformPlacement[] Platforms => platforms;
         public BlockPlacement[] Blocks => blocks;
         public BarrelPlacement[] Barrels => barrels;
+        public ForbiddenPlacement[] Forbidden => forbidden;
 
         public int AmmoCount => ammo?.Length ?? 0;
         public int TargetCount => blocks?.Length ?? 0;

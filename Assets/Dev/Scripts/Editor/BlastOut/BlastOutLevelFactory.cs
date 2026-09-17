@@ -26,7 +26,7 @@ namespace Dev.Scripts.Editor.BlastOut
         {
             return new[]
             {
-                Level01(), Level02(), Level03(), Level04(), Level05(), Level06()
+                Level01(), Level02(), Level03(), Level04(), Level05(), Level06(), Level07()
             };
         }
 
@@ -154,6 +154,36 @@ namespace Dev.Scripts.Editor.BlastOut
             return End(level, w);
         }
 
+        /* Level 7 — mục tiêu cấm. Lần đầu tiên sức mạnh trở thành RỦI RO: khối cần hạ nằm ngay
+           cạnh thứ không được chạm, mà bán kính nổ thì phủ cả hai nếu bắn vào giữa.
+
+           Khoảng cách khối ↔ mục tiêu cấm (2.2) lớn hơn BlastRadius (1.9) đúng một chút: có một
+           đường bắn đúng, nhưng phải nổ ở PHÍA NGOÀI của khối chứ không phải giữa hai vật. Đây là
+           level đầu tiên mà "nổ càng gần càng tốt" là sai. */
+        static BlastLevelConfig Level07()
+        {
+            var level = Begin(7, "DON'T BLAST THE BLUE ONE", new Vector2(-3.4f, -5f));
+            var w = new SerializedFieldWriter(level);
+
+            Ammo(w, AmmoType.Bomb, AmmoType.Bomb);
+            var platforms = w.ArrayOf("platforms", 1);
+            Platform(platforms, 0, new Vector2(1.4f, -0.6f), 4.6f);
+
+            var blocks = w.ArrayOf("blocks", 1);
+            Block(blocks, 0, 2.9f, -0.6f);
+
+            w.ArrayOf("barrels", 0);
+
+            var forbidden = w.ArrayOf("forbidden", 1);
+            if (forbidden != null)
+            {
+                forbidden.GetArrayElementAtIndex(0).FindPropertyRelative("Position").vector2Value =
+                    new Vector2(0.7f, -0.6f + PlatformHalfThickness + 0.5f);
+            }
+
+            return End(level, w);
+        }
+
         static BlastLevelConfig Begin(int number, string hint, Vector2 launcher)
         {
             BlastOutAssetFactory.EnsureFolder(BlastOutAssetFactory.DataFolder);
@@ -166,13 +196,17 @@ namespace Dev.Scripts.Editor.BlastOut
                 AssetDatabase.CreateAsset(level, path);
             }
 
-            new SerializedFieldWriter(level)
+            var writer = new SerializedFieldWriter(level)
                 .Int("displayNumber", number)
                 .Text("hint", hint)
                 .Vec2("launcherPosition", launcher)
                 .Int("launcherPlatformIndex", -1)
-                .Float("collectZoneTopY", -6.4f)
-                .Apply();
+                .Float("collectZoneTopY", -6.4f);
+
+            /* Dọn sạch mảng mục tiêu cấm ngay từ đầu: asset được ghi đè chứ không tạo mới, nên level
+               nào không khai báo lại sẽ giữ nguyên dữ liệu của lần sinh trước. */
+            writer.ArrayOf("forbidden", 0);
+            writer.Apply();
 
             return level;
         }
