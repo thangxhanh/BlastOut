@@ -57,6 +57,15 @@ namespace Dev.Scripts.BlastOut.UI
         }
 
         LostReason lostReason;
+        string levelHint;
+
+        void ShowHint(string text)
+        {
+            if (!hintLabel) return;
+
+            hintLabel.text = text;
+            hintLabel.gameObject.SetActive(!string.IsNullOrEmpty(text));
+        }
 
         /* Controller báo lý do TRƯỚC khi phase đổi sang Lost, để banner nói đúng chuyện vừa xảy ra. */
         public void SetLostReason(LostReason reason)
@@ -68,14 +77,10 @@ namespace Dev.Scripts.BlastOut.UI
         {
             lostReason = LostReason.OutOfAmmo;
 
+            levelHint = hint;
             if (levelLabel) levelLabel.text = $"LEVEL {number:00}";
 
-            if (hintLabel)
-            {
-                hintLabel.text = hint;
-                hintLabel.gameObject.SetActive(!string.IsNullOrEmpty(hint));
-            }
-
+            ShowHint(hint);
             if (resultRoot) resultRoot.SetActive(false);
         }
 
@@ -104,6 +109,22 @@ namespace Dev.Scripts.BlastOut.UI
                     ShowResult(lostReason == LostReason.ForbiddenHit
                         ? "YOU HIT THE GREEN ONE"
                         : "OUT OF AMMO", "RETRY", lostColor);
+                    break;
+                /* Ba giai đoạn chơi phải nói ra được, nếu không người chơi bắn xong là mù thông tin:
+                   không biết còn chạm được để kích nổ không, cũng không biết bao giờ bắn tiếp được.
+                   Quãng chờ vật lý lắng có thể kéo tới vài giây, mà chạm không ăn thì trông như
+                   game đơ chứ không ra "đang chờ". */
+                case BlastPhase.Flying:
+                    ShowHint("TAP TO DETONATE");
+                    if (resultRoot) resultRoot.SetActive(false);
+                    break;
+                case BlastPhase.Resolving:
+                    ShowHint("WAIT...");
+                    if (resultRoot) resultRoot.SetActive(false);
+                    break;
+                case BlastPhase.Aiming:
+                    ShowHint(levelHint);
+                    if (resultRoot) resultRoot.SetActive(false);
                     break;
                 default:
                     if (resultRoot) resultRoot.SetActive(false);

@@ -15,12 +15,22 @@ namespace Dev.Scripts.BlastOut.Gameplay
         [SerializeField] TrajectoryPreview preview;
         [SerializeField] BlastTuning tuning;
 
+        [Tooltip("Thân và nòng pháo. Mờ đi khi chưa bắn được.")]
+        [SerializeField] SpriteRenderer[] launcherParts;
+
+        [Tooltip("Màu lúc chưa bắn được. Dòng chữ dưới đáy màn dễ bị bỏ qua vì mắt đang dán vào " +
+                 "khẩu pháo và mục tiêu — làm mờ chính khẩu pháo thì không cần đọc cũng biết.")]
+        [SerializeField] Color busyTint = new Color(1f, 1f, 1f, 0.4f);
+
         /* Bắn ra vận tốc ban đầu; ai nghe thì tự quyết làm gì với nó. */
         public event Action<Vector2> Fired;
 
         Camera view;
         Vector2 dragStart;
         bool dragging;
+
+        /* Khởi tạo là false để lần gọi đầu luôn ghi màu, bất kể pháo bắt đầu ở trạng thái nào. */
+        bool ready;
 
         public Vector2 MuzzlePosition => muzzle.position;
 
@@ -33,6 +43,8 @@ namespace Dev.Scripts.BlastOut.Gameplay
         /* Gọi từ BlastGameController mỗi frame. canAim = false lúc đạn đang bay hoặc level đã kết thúc. */
         public void HandleInput(bool canAim)
         {
+            SetReady(canAim);
+
             if (!canAim)
             {
                 if (dragging) CancelDrag();
@@ -108,6 +120,22 @@ namespace Dev.Scripts.BlastOut.Gameplay
         {
             dragging = false;
             preview.Hide();
+        }
+
+        /* Chỉ ghi khi trạng thái ĐỔI: gán màu mỗi frame cho từng renderer là việc thừa, và
+           SpriteRenderer.color mỗi lần gán là một lần chạm xuống native. */
+        void SetReady(bool value)
+        {
+            if (ready == value) return;
+            ready = value;
+
+            if (launcherParts == null) return;
+
+            var tint = value ? Color.white : busyTint;
+            for (var i = 0; i < launcherParts.Length; i++)
+            {
+                if (launcherParts[i]) launcherParts[i].color = tint;
+            }
         }
 
         Vector2 ScreenToWorld(Vector3 screenPosition)
