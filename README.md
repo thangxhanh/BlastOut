@@ -2,7 +2,8 @@
 
 Mobile physics puzzle — Unity 6000.3.24f1, Android portrait.
 
-Mở `Assets/Dev/Scenes/GameScene.unity`, đặt Game view tỉ lệ dọc 9:16 rồi bấm Play.
+Mở `Assets/Dev/Scenes/GameScene.unity`, đặt Game view sang một tỉ lệ dọc bất kỳ rồi bấm Play —
+camera tự khớp theo bề ngang nên mọi tỉ lệ từ 4:3 đến 9:21 đều thấy đủ bố cục.
 Toàn bộ scene dựng lại được bằng một lệnh: **Tools → Blast Out → Build Game Scene**.
 
 **Sửa level:** chọn một asset trong `Assets/Dev/Data/BlastOut/` rồi nhìn sang Scene View — cả bố cục hiện ra và kéo được bằng chuột, sửa tới đâu ghi vào asset tới đó. Vòng **đỏ** quanh mục tiêu cấm là vùng không được nổ, vòng **cam** là tầm nổ của thùng. Hai vòng đó mới là thứ đáng nhìn: Level 7 từng *không thể thắng* vì vùng cấm nuốt gần hết chỗ được phép nổ — đọc dãy số trong Inspector thì không thấy, nhìn hai vòng chồng nhau thì thấy ngay.
@@ -88,6 +89,34 @@ Thêm loại đạn mới = thêm một nhánh trong `BlastProjectile.Detonate`.
 | Level 4: nổ trúng khối | thùng nổ theo → thắng | thùng còn nguyên → **thua** (đúng ý đồ) |
 | Level 4: nổ trúng thùng | thắng | **thắng** (đường thắng vẫn còn) |
 
+### Lỗi đáng giá nhất tìm được: bố cục tràn ra ngoài màn
+
+`orthographicSize` là nửa chiều **cao**, nên để cố định một giá trị thì màn càng dài khung nhìn càng **hẹp**. Đo ra:
+
+| Tỉ lệ | Nửa chiều rộng thấy được |
+|---|---|
+| 4:3 (tablet) | 6.00 |
+| 9:16 | 4.50 |
+| 9:19.5 (phần lớn máy Android hiện nay) | 3.69 |
+| 9:21 | 3.43 |
+
+Level dựng theo 9:16, nên **ở 9:19.5 thì cả 9 level đều có vật thể nằm ngoài màn** — người chơi không thấy mục tiêu. Level 5 thậm chí đã tràn ngay ở 9:16.
+
+Sửa bằng cách khớp camera theo **bề ngang**: `size = max(minHalfHeight, requiredHalfWidth / aspect)`. Màn dài thì tự nới chiều cao. Vẫn giữ sàn chiều cao, vì trên màn vuông mà chỉ khớp bề ngang thì khung lùn lại và vùng thu ở đáy bị đẩy ra ngoài. Kiểm lại cả 9 level trên 7 tỉ lệ: mép xa nhất 4.70, nằm trong ngưỡng 4.9.
+
+Đây là loại lỗi **không thể thấy khi đọc code, cũng không thấy khi chạy Editor ở 9:16** — chỉ lộ ra khi đo bằng số hoặc chạy trên máy thật.
+
+### Một cái bẫy khác: `Rigidbody2D.position` chưa đồng bộ
+
+Vụ nổ đo khoảng cách bằng `body.position`, nhưng level builder đặt vị trí qua `transform` và rigidbody chỉ chép lại ở **bước vật lý kế tiếp**. Nên ở lượt bắn đầu tiên:
+
+```
+A transform=(-1.20, -0.19) | body=(0.00, 0.00)
+B transform=( 2.40, -0.19) | body=(0.00, 0.00)
+```
+
+Mọi vật thể bị coi như đang nằm ở gốc toạ độ: vụ nổ "với tới" những thứ ở rất xa, khối bị đẩy sai cả hướng lẫn độ mạnh. Triệu chứng nhìn thấy chỉ là "đạn hơi mạnh" — phải so hai con số mới biết nguyên nhân thật. Đổi sang đo bằng `transform.position` ở cả `TargetBlock`, `ExplosiveBarrel` và `BlastProjectile`.
+
 ### Rủi ro lớn nhất và cách xử lý
 
 **Cấp phát trong lúc chơi.** Đây là nguồn giật hình số một trên mobile. Cách xử lý:
@@ -99,7 +128,7 @@ Thêm loại đạn mới = thêm một nhánh trong `BlastProjectile.Detonate`.
 
 **Treo game vì hitstop.** Khựng hình đặt `Time.timeScale = 0`; nếu đếm bằng `Time.deltaTime` thì đồng hồ đứng luôn và game treo vĩnh viễn. Toàn bộ phần này tick bằng `unscaledDeltaTime`, và `CleanUp()` trả `timeScale` về 1 phòng trường hợp thoát scene giữa lúc đang khựng. Đã verify: `1 → 0 → 1`, tự nhả.
 
-**Quy mô hiện tại rất nhỏ** — mỗi level dưới 10 rigidbody, 2 draw call chính cho sprite. Đây là lý do chưa cần tối ưu thêm: chưa có vấn đề thật để giải.
+**Quy mô hiện tại rất nhỏ** — mỗi level dưới 10 rigidbody động, vài chục collider, một hệ hạt bốn lớp lúc nổ. Đây là lý do chưa tối ưu thêm: chưa có vấn đề thật để giải. Số draw call thì **chưa đo** — sprite chưa gom Sprite Atlas nên gần như chắc chắn còn giảm được, nhưng nói một con số cụ thể lúc này chỉ là đoán.
 
 ### ⚠️ Chưa làm — cần chạy trước khi submit
 
@@ -116,10 +145,15 @@ Ba thứ dưới đây **chưa chạy** và không thể kết luận thay bằn
 Dùng **Claude Code** kết hợp **Unity MCP** (điều khiển Editor từ agent). Vài chỗ nó thật sự rút ngắn thời gian:
 
 - **Dựng scene và prefab bằng code** (`Assets/Dev/Scripts/Editor/BlastOut/`). Scene/prefab là asset nhị phân, diff git không đọc được. Dựng bằng code thì "đã đổi gì" hiện rõ trong diff, và dựng lại được y hệt trên máy khác bằng một lệnh menu.
-- **Đo trạng thái runtime trực tiếp** thay vì đoán bằng mắt. Các số ở mục 4 — độ trôi của khối, thời gian chờ, đường kính vòng xung kích — đều lấy bằng cách chạy code trong Play mode qua MCP. Bug "bệ chạy theo nhịp render" được tìm ra theo cách này, nhìn bằng mắt thì chỉ thấy "hơi lạ".
+- **Đo trạng thái runtime trực tiếp** thay vì đoán bằng mắt. Các số ở mục 4 đều lấy bằng cách chạy code trong Play mode qua MCP. Ba lỗi nặng nhất đều tìm ra theo cách này, và cả ba đều **không nhìn thấy được**:
+  - *bệ chạy theo nhịp render* — nhìn bằng mắt chỉ thấy "hơi lạ", so số mới thấy độ trôi tăng đều;
+  - *`body.position` chưa đồng bộ* — triệu chứng là "đạn hơi mạnh", phải in hai toạ độ cạnh nhau mới lộ;
+  - *bố cục tràn màn* — ở tỉ lệ Editor thì hoàn toàn bình thường.
 - **Tìm và thẩm định asset CC0**, đọc file license trong từng pack trước khi đưa vào repo.
 
-Những chỗ output của AI **bị sửa hoặc bỏ**: bố cục level (phải tự chơi mới biết Level 4 tự giải), bộ số trong `BlastTuning` (đạn ban đầu quá mạnh, bắn đâu cũng trúng), và chọn sprite (tên file Kenney đánh số nên phải mở từng ảnh ra xem).
+Ngược lại, có một loại lỗi mà công cụ đo **không bắt được**, và cả ba lần đều do người chơi thật phát hiện: Level 4 *tự giải*, Level 7 *không thể thắng*, đạn tách *nhìn không ra là đã tách*. Điểm chung là chúng đúng về mặt kỹ thuật — số liệu đẹp, không lỗi nào — nhưng sai về mặt trải nghiệm. Có lần tôi còn "verify" cú tách thành công vì đếm đúng 3 mảnh, trong khi cả ba nổ ngay frame sau đó.
+
+Những chỗ output của AI **bị sửa hoặc bỏ**: bố cục level, bộ số trong `BlastTuning` (đạn ban đầu quá mạnh, bắn đâu cũng trúng), chọn sprite (tên file Kenney đánh số nên phải mở từng ảnh ra xem), và cách báo trạng thái chờ (bản đầu làm mờ cả khẩu pháo — tô đỏ riêng nòng đọc ra "vừa bắn, còn nóng" thay vì chỉ "đang khoá").
 
 ---
 
@@ -129,7 +163,7 @@ Theo thứ tự ưu tiên:
 
 1. **Profile trên máy thật + Sprite Atlas.** *Vấn đề:* toàn bộ kết luận hiệu năng hiện dựa trên Editor, mà Editor không nói gì về shader strip, nén texture hay RAM thật. *Vì sao quan trọng với người chơi:* một cú giật hình đúng lúc vụ nổ làm hỏng chính khoảnh khắc mà cả game xây dựng để dẫn tới. *Kỳ vọng:* xác nhận 60fps ổn định trên máy tầm trung, và biết chắc không rò rỉ material.
 
-2. **Chơi thử với người thật rồi cân lại độ khó.** *Vấn đề:* thứ tự 6 level đang dựa trên suy luận thiết kế, chưa có ai ngoài tác giả chơi. *Vì sao quan trọng:* Level 4 từng *tự giải* mà chỉ khi chơi mới lộ ra — những chỗ như thế không thể tìm bằng đọc code. *Kỳ vọng:* biết được màn nào làm người chơi bỏ cuộc, và sửa bố cục thay vì sửa số.
+2. **Chơi thử với người thật rồi cân lại độ khó.** *Vấn đề:* thứ tự 9 level dựa trên suy luận thiết kế, chưa có ai ngoài tác giả chơi hết. *Vì sao quan trọng:* Level 4 từng *tự giải* và Level 7 từng *không thể thắng* — cả hai chỉ lộ ra khi chơi, đọc code không thấy. *Kỳ vọng:* biết màn nào làm người chơi bỏ cuộc, và sửa bố cục thay vì sửa số.
 
 3. **Khoảnh khắc thắng.** *Vấn đề:* thắng hiện chỉ là một dòng chữ hiện ra. *Vì sao quan trọng:* đây là phần thưởng cho toàn bộ chuỗi quyết định — nó đang là phần nhạt nhất trong game. *Kỳ vọng:* slow-motion ngắn khi khối cuối rơi vào vùng thu, cộng camera dõi theo nó.
 
@@ -137,7 +171,7 @@ Theo thứ tự ưu tiên:
 
 **Giữ bằng mọi giá:** vòng chơi hoàn chỉnh (ngắm → bắn → kích nổ → thắng/thua → restart nhanh), Level 1 đủ rõ để tự hiểu cách chơi, và **APK chạy được**. Một game nhỏ mà chơi trọn vẹn vẫn hơn hẳn một project lớn dở dang.
 
-**Giảm scope:** rút từ 6 xuống 3 level — giữ Level 1 (dạy chơi), Level 3 (bệ chạy) và Level 4 (thùng nổ), vì ba màn này đã đủ chứng minh có *decision* thật chứ không chỉ tăng độ khó ngắm bắn.
+**Giảm scope:** rút từ 9 xuống 4 level — giữ Level 1 (dạy chơi), Level 3 (bệ chạy), Level 4 (thùng nổ) và Level 7 (mục tiêu cấm), vì bốn màn này đã đủ chứng minh có *decision* thật chứ không chỉ tăng độ khó ngắm bắn.
 
 **Bỏ:** đạn tách ba, bệ chạy vòng tròn, và toàn bộ phần đánh bóng hiệu ứng — cắt được nhiều giờ mà không đụng tới thứ làm nên trải nghiệm lõi.
 
@@ -145,7 +179,7 @@ Theo thứ tự ưu tiên:
 
 ## Asset
 
-Toàn bộ art và âm thanh đều **CC0** (public domain, dùng được cả thương mại). File license gốc đi kèm trong từng thư mục.
+Toàn bộ art và âm thanh đều **CC0** (public domain, dùng được cả thương mại). Các pack Kenney có kèm file license gốc trong thư mục sprite; hai pack âm thanh không kèm file nào trong bản tải về, nên nguồn được ghi lại trong `Assets/Dev/Audio/SFX/BlastOut/CREDITS.txt`.
 
 | Nguồn | Dùng cho |
 |---|---|

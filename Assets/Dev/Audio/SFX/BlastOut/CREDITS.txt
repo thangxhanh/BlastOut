@@ -1,0 +1,16 @@
+Âm thanh dùng trong Blast Out
+=============================
+
+Tất cả đều CC0 (Creative Commons Zero — public domain, dùng được cả cho mục
+đích thương mại, không bắt buộc ghi công). Ghi nguồn ở đây cho minh bạch.
+
+sfx_shoot.ogg      shot_01      100 CC0 SFX — https://opengameart.org/content/100-cc0-sfx
+sfx_explosion.ogg  explosion    100 CC0 SFX — https://opengameart.org/content/100-cc0-sfx
+sfx_impact.ogg     hit_02       100 CC0 SFX — https://opengameart.org/content/100-cc0-sfx
+sfx_collect.ogg    plop_01      100 CC0 SFX — https://opengameart.org/content/100-cc0-sfx
+
+sfx_win.ogg        confirmation  Kenney Interface Sounds — https://kenney.nl/assets/interface-sounds
+sfx_lose.ogg       error         Kenney Interface Sounds — https://kenney.nl/assets/interface-sounds
+
+Hai pack gốc không kèm file license trong bản tải về; giấy phép CC0 được ghi
+trên chính trang tải của từng pack.
