@@ -5,6 +5,8 @@ Mobile physics puzzle — Unity 6000.3.24f1, Android portrait.
 Mở `Assets/Dev/Scenes/GameScene.unity`, đặt Game view tỉ lệ dọc 9:16 rồi bấm Play.
 Toàn bộ scene dựng lại được bằng một lệnh: **Tools → Blast Out → Build Game Scene**.
 
+**Sửa level:** chọn một asset trong `Assets/Dev/Data/BlastOut/` rồi nhìn sang Scene View — cả bố cục hiện ra và kéo được bằng chuột, sửa tới đâu ghi vào asset tới đó. Vòng **đỏ** quanh mục tiêu cấm là vùng không được nổ, vòng **cam** là tầm nổ của thùng. Hai vòng đó mới là thứ đáng nhìn: Level 7 từng *không thể thắng* vì vùng cấm nuốt gần hết chỗ được phép nổ — đọc dãy số trong Inspector thì không thấy, nhìn hai vòng chồng nhau thì thấy ngay.
+
 ---
 
 ## 1. Game idea
