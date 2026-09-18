@@ -112,11 +112,11 @@ Output của AI **bị sửa hoặc bỏ**: bố cục level, bộ số trong `B
 
 1. **Chơi thử với người thật rồi cân lại độ khó.** Thứ tự 9 level dựa trên suy luận thiết kế. Level 4 từng *tự giải* và Level 7 từng *không thể thắng* — cả hai đều đúng về kỹ thuật, chỉ lộ ra khi có người chơi. *Kỳ vọng:* biết màn nào làm người chơi bỏ cuộc, sửa bố cục thay vì sửa số.
 
-2. **Safe area.** HUD hiện nằm sát mép trên nên tai thỏ hoặc camera đục lỗ sẽ che mất nhãn `LEVEL`/`BOMB` và nút `RESTART`. Đây không phải chuyện thẩm mỹ: người chơi mất chỗ bấm restart thì kẹt luôn ở màn đang chơi. *Kỳ vọng:* HUD co vào vùng an toàn trên mọi máy.
+2. **Dạy cơ chế bằng popup có hình, thay cho một dòng chữ.** Hiện mọi cơ chế mới đều được dạy bằng chữ tiếng Anh ở đáy màn — `TAP AGAIN WHILE FLYING TO DETONATE`, `ONE SHOT - HIT THE BARREL`. Người chơi casual thường không đọc, mà đề lại đòi *"trong 60 giây đầu player phải tự hiểu mechanic chính"*. Một dòng chữ cũng chỉ mô tả được **thao tác**, không cho thấy **kết quả** của thao tác đó. *Kỳ vọng:* lần đầu gặp mỗi cơ chế thì hiện popup gọn — một câu ngắn kèm clip vài giây quay chính cảnh đó (chạm giữa không trung → đạn nổ; bắn thùng → dây chuyền). Xem xong là hiểu, không phải thua một lần mới biết luật.
 
-3. **Khoảnh khắc thắng.** Hiện chỉ là một dòng chữ hiện ra, trong khi đây là phần thưởng cho toàn bộ chuỗi quyết định. *Kỳ vọng:* slow-motion ngắn khi khối cuối rơi vào vùng thu, kèm camera dõi theo.
+3. **Khai thác tương tác khối–khối.** Đây là physics puzzle, nhưng 9 level hiện tại các khối gần như không đụng nhau: mỗi khối bị đẩy độc lập rồi rơi. Chuỗi vật lý — khối đẩy khối, tháp khối đổ, một khối chèn khối khác rơi theo — là chiều sâu lớn nhất của thể loại mà game **chưa chạm tới**. *Kỳ vọng:* vài level bố cục dạng chồng/tháp, mở ra lớp quyết định mới **mà không cần thêm một cơ chế nào** — chỉ cần sắp xếp lại thứ đã có.
 
-*Đã cân nhắc rồi loại:* profile hiệu năng và Sprite Atlas. Số đo cho thấy không có vấn đề để giải — đưa vào danh sách chỉ để trông có vẻ kỹ lưỡng thì chiếm mất chỗ của ba việc trên.
+*Đã cân nhắc rồi loại:* profile hiệu năng và Sprite Atlas — số đo cho thấy không có vấn đề để giải. Safe area và khoảnh khắc thắng cũng đáng làm, nhưng chúng hoàn thiện thứ đã có, còn ba việc trên mở rộng được trải nghiệm.
 
 ## Nếu chỉ có 24 giờ
 
