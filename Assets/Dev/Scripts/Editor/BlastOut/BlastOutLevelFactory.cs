@@ -29,6 +29,24 @@ namespace Dev.Scripts.Editor.BlastOut
         /* Bằng khối mục tiêu: mục tiêu cấm giờ dùng chung sprite và cùng cỡ, chỉ khác màu. */
         const float ForbiddenHalfHeight = BlockHalfHeight;
 
+        /* Sinh lại TOÀN BỘ level, ghi đè mọi chỉnh tay. Chỉ dùng qua lệnh menu riêng, KHÔNG gọi từ
+           lệnh dựng scene — level chỉnh bằng Scene View là công sức cân bằng thật, mà dựng scene
+           lại là việc hay làm, nên gộp hai thứ vào một lệnh thì sớm muộn cũng xoá nhầm. */
+        [MenuItem("Tools/Blast Out/Regenerate All Levels (ghi đè chỉnh tay)", false, 20)]
+        public static void RegenerateAll()
+        {
+            if (!EditorUtility.DisplayDialog("Sinh lại toàn bộ level?",
+                    "Mọi chỉnh sửa bằng tay trên 9 level sẽ bị ghi đè bằng bố cục gốc trong code.",
+                    "Ghi đè", "Huỷ"))
+            {
+                return;
+            }
+
+            CreateAll();
+            AssetDatabase.SaveAssets();
+            Debug.Log("[BlastOut] Đã sinh lại 9 level từ code.");
+        }
+
         public static BlastLevelConfig[] CreateAll()
         {
             return new[]
@@ -37,6 +55,28 @@ namespace Dev.Scripts.Editor.BlastOut
                 Level08(), Level09()
             };
         }
+
+        /* Đọc level đã có trên đĩa; thiếu cái nào thì mới sinh cái đó. Lệnh dựng scene dùng hàm này
+           nên chạy bao nhiêu lần cũng không đụng tới bố cục đã chỉnh. */
+        public static BlastLevelConfig[] LoadOrCreateAll()
+        {
+            var levels = new BlastLevelConfig[LevelCount];
+            var missing = 0;
+
+            for (var i = 0; i < LevelCount; i++)
+            {
+                var path = $"{BlastOutAssetFactory.DataFolder}/level_{i + 1:00}.asset";
+                levels[i] = AssetDatabase.LoadAssetAtPath<BlastLevelConfig>(path);
+                if (!levels[i]) missing++;
+            }
+
+            if (missing == 0) return levels;
+
+            Debug.Log($"[BlastOut] Thiếu {missing} level trên đĩa — sinh lại từ code.");
+            return CreateAll();
+        }
+
+        const int LevelCount = 9;
 
         /* Level 1 — chỉ có kéo, thả. Một khối, một bệ, không vật cản: KHÔNG THỂ thua khi còn đạn. */
         static BlastLevelConfig Level01()
@@ -211,11 +251,17 @@ namespace Dev.Scripts.Editor.BlastOut
             Ammo(w, AmmoType.Bomb, AmmoType.Bomb);
             var platforms = w.ArrayOf("platforms", 2);
             Platform(platforms, 0, new Vector2(0.8f, -0.6f), 2.6f, MotionKind.Horizontal, 1.7f, 0.13f);
-            Platform(platforms, 1, new Vector2(3.6f, -0.6f), 1.4f);
+
+            /* Bệ đỡ mục tiêu cấm phải nằm NGOÀI tầm với của bệ chạy, nếu không hai bệ lồng vào nhau
+               ở biên phải và nhìn ra một khối dính liền:
+                 mép phải bệ chạy = 0.8 + 1.3 + 1.7 = 3.8
+                 mép trái bệ này  = 4.3 - 0.4       = 3.9
+               Bản trước để 3.6 / rộng 1.4 nên mép trái chỉ 2.90 — chồng lên nhau 0.90 unit. */
+            Platform(platforms, 1, new Vector2(4.3f, -0.6f), 0.8f);
 
             Block(w.ArrayOf("blocks", 1), 0, 0.8f, -0.6f);
             w.ArrayOf("barrels", 0);
-            Forbidden(w.ArrayOf("forbidden", 1), 0, 3.6f, -0.6f);
+            Forbidden(w.ArrayOf("forbidden", 1), 0, 4.3f, -0.6f);
 
             return End(level, w);
         }

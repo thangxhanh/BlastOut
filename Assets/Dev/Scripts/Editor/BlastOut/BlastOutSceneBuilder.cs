@@ -38,7 +38,10 @@ namespace Dev.Scripts.Editor.BlastOut
             var circle = BlastOutAssetFactory.CreateCircleSprite("circle", 64);
 
             var tuning = BlastOutAssetFactory.CreateTuning();
-            var levels = BlastOutLevelFactory.CreateAll();
+            /* LoadOrCreate chứ không Create: dựng lại scene là việc hay làm, mà level đã chỉnh tay
+               trong Scene View là công sức cân bằng thật — ghi đè chúng ở đây thì mất lúc nào
+               không biết. Muốn sinh lại từ code thì dùng lệnh menu riêng. */
+            var levels = BlastOutLevelFactory.LoadOrCreateAll();
             var levelSet = BlastOutAssetFactory.CreateLevelSet(levels);
             var trailMaterial = BlastOutPrefabFactory.CreateTrailMaterial();
 
