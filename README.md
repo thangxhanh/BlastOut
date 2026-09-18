@@ -87,7 +87,11 @@ Kiểm rò rỉ bằng cách chơi tự động 9 level × 2 lượt, chụp sna
 
 ### ⚠️ Chưa làm
 
-**Chơi APK trên máy thật.** Mọi số liệu trên đều đo trong Editor, mà Editor không nói gì về shader bị strip, texture nén sai định dạng hay RAM thật. Đây là thứ duy nhất không thể thay bằng đo trong Editor.
+**Chơi APK trên máy thật.** Không phải vì lo hiệu năng — 33 draw call và 0.35 ms render thì máy tầm trung nào cũng dư sức. Ba thứ khác mới cần thiết bị thật mới thấy:
+
+- **Shader bị strip** — Editor chạy đẹp, máy thật ra màu hồng;
+- **Texture nén sai định dạng** — chỉ lộ khi build qua đường nén của Android;
+- **HUD bị tai thỏ che** — nhãn `LEVEL`/`BOMB` và nút `RESTART` đều nằm sát mép trên, mà game **chưa xử lý safe area**.
 
 ---
 
@@ -106,11 +110,13 @@ Output của AI **bị sửa hoặc bỏ**: bố cục level, bộ số trong `B
 
 ## 6. Nếu có thêm 24 giờ
 
-1. **Profile trên máy thật.** Rò rỉ bộ nhớ và draw call đã đo xong trong Editor và đều sạch, nhưng Editor không nói gì về shader strip, nén texture hay RAM thật. Một cú giật hình đúng lúc vụ nổ làm hỏng chính khoảnh khắc mà cả game xây dựng để dẫn tới. *Kỳ vọng:* xác nhận 60fps ổn định trên máy tầm trung.
+1. **Chơi thử với người thật rồi cân lại độ khó.** Thứ tự 9 level dựa trên suy luận thiết kế. Level 4 từng *tự giải* và Level 7 từng *không thể thắng* — cả hai đều đúng về kỹ thuật, chỉ lộ ra khi có người chơi. *Kỳ vọng:* biết màn nào làm người chơi bỏ cuộc, sửa bố cục thay vì sửa số.
 
-2. **Chơi thử với người thật rồi cân lại độ khó.** Thứ tự 9 level dựa trên suy luận thiết kế. Level 4 từng *tự giải* và Level 7 từng *không thể thắng* — cả hai chỉ lộ ra khi chơi. *Kỳ vọng:* biết màn nào làm người chơi bỏ cuộc, sửa bố cục thay vì sửa số.
+2. **Safe area.** HUD hiện nằm sát mép trên nên tai thỏ hoặc camera đục lỗ sẽ che mất nhãn `LEVEL`/`BOMB` và nút `RESTART`. Đây không phải chuyện thẩm mỹ: người chơi mất chỗ bấm restart thì kẹt luôn ở màn đang chơi. *Kỳ vọng:* HUD co vào vùng an toàn trên mọi máy.
 
 3. **Khoảnh khắc thắng.** Hiện chỉ là một dòng chữ hiện ra, trong khi đây là phần thưởng cho toàn bộ chuỗi quyết định. *Kỳ vọng:* slow-motion ngắn khi khối cuối rơi vào vùng thu, kèm camera dõi theo.
+
+*Đã cân nhắc rồi loại:* profile hiệu năng và Sprite Atlas. Số đo cho thấy không có vấn đề để giải — đưa vào danh sách chỉ để trông có vẻ kỹ lưỡng thì chiếm mất chỗ của ba việc trên.
 
 ## Nếu chỉ có 24 giờ
 
